@@ -38,11 +38,13 @@
     var platforms;
     var cursors;
     var score = 0;
-    var level = 1;
+    var wave = 1;
     var lives = 3;
     var scoreText;
-    var levelText;
+    var waveText;
     var livesText;
+    var music;
+    var portalJump = false;
     var gameOver = false;
 
     var game = new Phaser.Game(config);
@@ -54,10 +56,25 @@
         this.load.image('star', 'assets/star.png');
         this.load.image('bomb', 'assets/bomb.png');
         this.load.spritesheet('dude', 'assets/dude.png', { frameWidth: 32, frameHeight: 48 });
+        this.load.audio('boden', ['assets/audio/bodenstaendig_2000_in_rock_4bit.mp3', 'assets/audio/bodenstaendig_2000_in_rock_4bit.ogg']);
+        this.load.audio('tommy', 'assets/audio/tommy_in_goa.mp3');
+        this.load.audio('gameOver', 'assets/audio/SoundEffects/player_death.wav');
+        this.load.audio('ping', 'assets/audio/SoundEffects/p-ping.mp3');
+        this.load.audio('explode', 'assets/audio/SoundEffects/explosion.mp3');
+        this.load.audio('bounce', 'assets/audio/SoundEffects/mario-jumping-sound.mp3');
+        this.load.audio('portalJump', 'assets/audio/SoundEffects/pickup.wav')
     }
 
     function create ()
     {
+        // play the music meastro!
+        music = this.sound.add('boden');
+        music.play();
+        this.sound.add('gameOver');
+        this.sound.add('ping');
+        this.sound.add('explode');
+        this.sound.add('portalJump');
+
         //  A simple background for our game
         this.add.image(400, 300, 'sky');
 
@@ -122,25 +139,46 @@
 
         //  The score
         scoreText = this.add.text(16, 16, 'score: '+score, { fontSize: '32px', fill: '#000' });
-        levelText = this.add.text(316, 16, 'level: '+level, { fontSize: '32px', fill: '#000' });
+        waveText = this.add.text(316, 16, 'wave: '+wave, { fontSize: '32px', fill: '#000' });
         livesText = this.add.text(616, 16, 'lives: '+lives, { fontSize: '32px', fill: '#000' });
 
         //  Collide the player and the stars with the platforms
         this.physics.add.collider(player, platforms);
         this.physics.add.collider(stars, platforms);
-        this.physics.add.collider(bombs, platforms);
+        this.physics.add.collider(bombs, platforms, bounce, null, this);
 
         //  Checks to see if the player overlaps with any of the stars, if he does call the collectStar function
         this.physics.add.overlap(player, stars, collectStar, null, this);
 
         this.physics.add.collider(player, bombs, hitBomb, null, this);
+
     }
 
     function update ()
     {
         if (gameOver)
         {
+            music.stop();
             return;
+        }
+
+        if (portalJump) {
+            lives = lives + 1;
+            livesText.setText('lives: ' + lives);
+            if (bombs.countActive(true) > 0) {
+                bombs.children.iterate(function (child) {
+                    child.disableBody(true, true);
+                });
+            }
+            bombs = this.physics.add.group();
+            this.physics.add.collider(bombs, platforms, bounce, null, this);
+            this.physics.add.collider(player, bombs, hitBomb, null, this);
+
+            music.stop();
+            music = this.sound.add('tommy');
+            music.play();
+
+            portalJump = false;
         }
 
         if (cursors.left.isDown)
@@ -170,10 +208,11 @@
 
     function collectStar (player, star)
     {
+        this.sound.play('ping');
         star.disableBody(true, true);
 
         //  Add and update the score
-        score += 10 * level;
+        score += 10 * wave;
         scoreText.setText('score: ' + score);
 
         if (stars.countActive(true) === 0)
@@ -193,10 +232,19 @@
             bomb.setVelocity(Phaser.Math.Between(-200, 200), 20);
             bomb.allowGravity = false;
 
-            level += 1;
-            levelText.setText('level: ' + level);
+            wave += 1;
+            waveText.setText('wave: ' + wave);
 
+            if (wave % 6 === 0) {
+                this.sound.play('portalJump');
+                portalJump = true;
+            }
         }
+    }
+
+    function bounce()
+    {
+        this.sound.play('bounce');
     }
 
     function hitBomb (player, bomb)
@@ -206,10 +254,13 @@
 
         this.physics.pause();
 
+        this.sound.play('explode');
+
         if (lives > 0) {
             sleep(2000);
             this.physics.resume();
         } else {
+            this.sound.play('gameOver');
             player.anims.play('turn');
             player.setTint(0xff0000);
             gameOver = true;
