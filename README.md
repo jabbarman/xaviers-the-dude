@@ -1,2 +1,2 @@
 # xaviers-the-dude
-A JavaScript game based upon the Phaser Library
+A JavaScript game based upon the popular Phaser graphics Library
