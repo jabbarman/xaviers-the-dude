@@ -57,6 +57,7 @@ class SceneB extends Phaser.Scene {
         this.load.image('star', 'assets/star.png');
         this.load.image('bomb', 'assets/bomb.png');
         this.load.spritesheet('dude', 'assets/dude.png', {frameWidth: 32, frameHeight: 48});
+        this.load.spritesheet('fullscreen', 'assets/fullscreen.png', { frameWidth: 64, frameHeight: 64 });
         this.load.audio('boden', ['assets/audio/bodenstaendig_2000_in_rock_4bit.mp3', 'assets/audio/bodenstaendig_2000_in_rock_4bit.ogg']);
         this.load.audio('tommy', 'assets/audio/tommy_in_goa.mp3');
         this.load.audio('gameOver', 'assets/audio/SoundEffects/player_death.wav');
@@ -138,7 +139,7 @@ class SceneB extends Phaser.Scene {
 
         //  The score
         hiScoreText = this.add.text(280, 10, 'Hi Score: ' + score, {fontSize: '32px', fill: '#000'});
-        let textBlockPositionX = 695;
+        let textBlockPositionX = 15;
         let textBlockOffsetY = 12;
         livesText = this.add.text(textBlockPositionX, textBlockOffsetY, 'lives: ' + lives, {
             fontSize: '14px',
@@ -167,9 +168,38 @@ class SceneB extends Phaser.Scene {
         this.physics.add.overlap(player, stars, collectStar, null, this);
         //  Collision checking the player with bombs!
         this.physics.add.collider(player, bombs, hitBomb, null, this);
+
+        let button = this.add.image(800-16, 16, 'fullscreen', 0).setOrigin(1, 0).setInteractive();
+
+        button.on('pointerup', function () {
+            if (this.scale.isFullscreen)
+            {
+                button.setFrame(0);
+                this.scale.stopFullscreen();
+            }
+            else
+            {
+                button.setFrame(1);
+                this.scale.startFullscreen();
+            }
+        }, this);
+
+        let FKey = this.input.keyboard.addKey('F');
+        FKey.on('down', function () {
+            if (this.scale.isFullscreen)
+            {
+                button.setFrame(0);
+                this.scale.stopFullscreen();
+            }
+            else
+            {
+                button.setFrame(1);
+                this.scale.startFullscreen();
+            }
+        }, this);
     }
 
-    update() {
+    update(time, delta) {
         if (gameOver) {
             music.stop();
             // show game over text
@@ -232,9 +262,8 @@ class SceneC extends Phaser.Scene {
     {
         let background = this.add.sprite(0, 0, 'background_image');
         background.setOrigin(0,0);
-        this.add.text(150, 230, 'The End', { fontSize: '100px', color: '#0000FF' });
-
-
+        this.add.text(180, 200, 'The End', { fontSize: '100px', color: '#0000FF' });
+        this.add.text(180, 350, 'High Score ' + score, { fontSize: '50px', color: '#0000FF' });
     }
 }
 
@@ -302,8 +331,13 @@ function sleep(ms) {
 
 let config = {
     type: Phaser.AUTO,
-    width: width,
-    height: height,
+    scale: {
+        mode: Phaser.Scale.FIT,
+        parent: 'phaser-example',
+        autoCenter: Phaser.Scale.CENTER_BOTH,
+        width: width,
+        height: height
+    },
     physics: { default: 'arcade',
         arcade: {
             gravity: { y: 300 },
