@@ -1,6 +1,6 @@
 
 const width = 800;
-const height = 600;s
+const height = 600;
 
 let debug = false;
 
