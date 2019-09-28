@@ -1,10 +1,10 @@
 
 const width = 800;
-const height = 600;
+const height = 600;s
 
-let debug = true;
+let debug = false;
 
-let starsPerWave = 10; // NB the actual no will be 1 more as it creates the 1st one and then repeats by this value
+let starsPerWave = 10; // NB the actual no will be 1 more as it creates the 1st one and then repeats by this vsalue
 let lives = 3;
 let score = 0;
 let hiScore = 100;
