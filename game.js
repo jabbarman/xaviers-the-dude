@@ -448,13 +448,13 @@ function bounce() {
     this.sound.play('bounce');
 }
 
-function hitBomb(player, bomb) {
+async function hitBomb(player, bomb) {
     lives -= 1;
     livesText.setText('lives: ' + lives);
     this.physics.pause();
     this.sound.play('explode');
     if (lives > 0) {
-        sleep(2000);
+        await sleep(2000);
         this.physics.resume();
     } else {
         this.sound.play('gameOver');
@@ -466,7 +466,7 @@ function hitBomb(player, bomb) {
     bomb.disableBody(true, true);
 }
 
-function sleep(ms) {
+async function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
@@ -480,7 +480,8 @@ let config = {
         height: height
     },
     pixelArt: true,
-    physics: { default: 'arcade',
+    physics: { 
+        default: 'arcade',
         arcade: {
             gravity: { y: 300 },
             debug: false
