@@ -286,6 +286,38 @@ class SceneD extends Phaser.Scene {
     {
         super('SceneD');
     }
+    
+    loadHighScores() {
+        // Try to get high scores from localStorage
+        let highScores = [];
+        try {
+            const storedScores = localStorage.getItem('highScores');
+            if (storedScores) {
+                highScores = JSON.parse(storedScores);
+            }
+        } catch (e) {
+            console.error('Error loading high scores from localStorage:', e);
+        }
+        
+        // Ensure we have 5 entries, fill with defaults if needed
+        while (highScores.length < 5) {
+            highScores.push({ score: 1000, initials: 'UNK' });
+        }
+        
+        // Sort by score (highest first)
+        highScores.sort((a, b) => b.score - a.score);
+        
+        // Trim to 5 entries
+        return highScores.slice(0, 5);
+    }
+    
+    saveHighScores(highScores) {
+        try {
+            localStorage.setItem('highScores', JSON.stringify(highScores));
+        } catch (e) {
+            console.error('Error saving high scores to localStorage:', e);
+        }
+    }
 
     preload() {
         this.load.image('block', 'assets/input/block.png');
@@ -302,7 +334,31 @@ class SceneD extends Phaser.Scene {
         ];
         var cursor = {x: 0, y: 0};
         var name = '';
-
+        
+        // Load high scores from localStorage or use defaults
+        var highScores = this.loadHighScores();
+        
+        // Check if current score qualifies for high scores
+        var scorePosition = -1;
+        for (var i = 0; i < highScores.length; i++) {
+            if (score > highScores[i].score) {
+                scorePosition = i;
+                break;
+            }
+        }
+        
+        // If score qualifies, insert it into the high scores array
+        var newHighScore = false;
+        if (scorePosition !== -1) {
+            newHighScore = true;
+            // Insert the new score
+            highScores.splice(scorePosition, 0, { score: score, initials: '???' });
+            // Remove the lowest score
+            highScores.pop();
+            // Save the updated high scores
+            this.saveHighScores(highScores);
+        }
+        
         var input = this.add.bitmapText(130, 50, 'arcade', 'ABCDEFGHIJ\n\nKLMNOPQRST\n\nUVWXYZ.-').setLetterSpacing(20);
 
         input.setInteractive();
@@ -314,11 +370,12 @@ class SceneD extends Phaser.Scene {
 
         var legend = this.add.bitmapText(80, 260, 'arcade', 'RANK  SCORE   NAME').setTint(0xff00ff);
 
-        this.add.bitmapText(80, 310, 'arcade', '1ST   50000    ').setTint(0xff0000);
-        this.add.bitmapText(80, 360, 'arcade', '2ND   40000    ICE').setTint(0xff8200);
-        this.add.bitmapText(80, 410, 'arcade', '3RD   30000    GOS').setTint(0xffff00);
-        this.add.bitmapText(80, 460, 'arcade', '4TH   20000    HRE').setTint(0x00ff00);
-        this.add.bitmapText(80, 510, 'arcade', '5TH   10000    ETE').setTint(0x00bfff);
+        // Display high scores from localStorage
+        this.add.bitmapText(80, 310, 'arcade', '1ST   ' + highScores[0].score.toString().padEnd(8) + highScores[0].initials).setTint(0xff0000);
+        this.add.bitmapText(80, 360, 'arcade', '2ND   ' + highScores[1].score.toString().padEnd(8) + highScores[1].initials).setTint(0xff8200);
+        this.add.bitmapText(80, 410, 'arcade', '3RD   ' + highScores[2].score.toString().padEnd(8) + highScores[2].initials).setTint(0xffff00);
+        this.add.bitmapText(80, 460, 'arcade', '4TH   ' + highScores[3].score.toString().padEnd(8) + highScores[3].initials).setTint(0x00ff00);
+        this.add.bitmapText(80, 510, 'arcade', '5TH   ' + highScores[4].score.toString().padEnd(8) + highScores[4].initials).setTint(0x00bfff);
 
         var playerText = this.add.bitmapText(560, 310, 'arcade', name).setTint(0xff0000);
 
@@ -352,6 +409,15 @@ class SceneD extends Phaser.Scene {
                 //  Enter or Space
                 if (cursor.x === 9 && cursor.y === 2 && name.length > 0) {
                     //  Submit
+                    if (newHighScore && scorePosition !== -1) {
+                        // Update the player's initials in the high scores
+                        highScores[scorePosition].initials = name;
+                        // Save the updated high scores
+                        this.saveHighScores(highScores);
+                        
+                        // Update the displayed high scores
+                        this.scene.restart();
+                    }
                 } else if (cursor.x === 8 && cursor.y === 2 && name.length > 0) {
                     //  Rub
                     name = name.substr(0, name.length - 1);
@@ -400,6 +466,15 @@ class SceneD extends Phaser.Scene {
                 playerText.text = name;
             } else if (char === '>' && name.length > 0) {
                 //  Submit
+                if (newHighScore && scorePosition !== -1) {
+                    // Update the player's initials in the high scores
+                    highScores[scorePosition].initials = name;
+                    // Save the updated high scores
+                    this.saveHighScores(highScores);
+                    
+                    // Update the displayed high scores
+                    this.scene.restart();
+                }
             } else if (name.length < 3) {
                 //  Add
                 name = name.concat(char);
