@@ -1,4 +1,3 @@
-
 const width = 800;
 const height = 600;
 
@@ -7,7 +6,8 @@ let debug = false;
 let starsPerWave = 10; // NB the actual no will be 1 more as it creates the 1st one and then repeats by this vsalue
 let lives = 3;
 let score = 0;
-let hiScore = 100;
+// Load hiScore from localStorage if available, otherwise use default value
+let hiScore = localStorage.getItem('hiScore') ? parseInt(localStorage.getItem('hiScore')) : 100;
 let wave = 1;
 let portalJump = false;
 let gameOver = false;
@@ -27,6 +27,7 @@ if (debug) {
     starsPerWave = 0;
     lives = 1;
     hiScore = 0;
+    localStorage.setItem('hiScore', hiScore);
 }
 
 class SceneA extends Phaser.Scene {
@@ -38,7 +39,7 @@ class SceneA extends Phaser.Scene {
 
     preload ()
     {
-        this.load.image('background_image', '/assets/sky.png');
+        this.load.image('background_image', 'assets/sky.png');
     }
 
     create ()
@@ -146,7 +147,7 @@ class SceneB extends Phaser.Scene {
         bombs = this.physics.add.group();
 
         //  The score
-        hiScoreText = this.add.text(280, 10, 'Hi Score: ' + score, {fontSize: '32px', fill: '#000'});
+        hiScoreText = this.add.text(280, 10, 'Hi Score: ' + hiScore, {fontSize: '32px', fill: '#000'});
         let textBlockPositionX = 15;
         let textBlockOffsetY = 12;
         livesText = this.add.text(textBlockPositionX, textBlockOffsetY, 'lives: ' + lives, {
@@ -271,7 +272,8 @@ class SceneC extends Phaser.Scene {
         let background = this.add.sprite(0, 0, 'background_image');
         background.setOrigin(0,0);
         this.add.text(180, 200, 'The End', { fontSize: '100px', color: '#0000FF' });
-        this.add.text(180, 350, 'High Score ' + score, { fontSize: '50px', color: '#0000FF' });
+        this.add.text(180, 300, 'Your Score ' + score, { fontSize: '50px', color: '#0000FF' });
+        this.add.text(180, 380, 'High Score ' + hiScore, { fontSize: '50px', color: '#0000FF' });
         this.input.on('pointerup', function () {
             this.scene.start('SceneD');
         }, this);
@@ -282,6 +284,38 @@ class SceneD extends Phaser.Scene {
     constructor ()
     {
         super('SceneD');
+    }
+
+    loadHighScores() {
+        // Try to get high scores from localStorage
+        let highScores = [];
+        try {
+            const storedScores = localStorage.getItem('highScores');
+            if (storedScores) {
+                highScores = JSON.parse(storedScores);
+            }
+        } catch (e) {
+            console.error('Error loading high scores from localStorage:', e);
+        }
+
+        // Ensure we have 5 entries, fill with defaults if needed
+        while (highScores.length < 5) {
+            highScores.push({ score: 1000, initials: 'UNK' });
+        }
+
+        // Sort by score (highest first)
+        highScores.sort((a, b) => b.score - a.score);
+
+        // Trim to 5 entries
+        return highScores.slice(0, 5);
+    }
+
+    saveHighScores(highScores) {
+        try {
+            localStorage.setItem('highScores', JSON.stringify(highScores));
+        } catch (e) {
+            console.error('Error saving high scores to localStorage:', e);
+        }
     }
 
     preload() {
@@ -300,6 +334,30 @@ class SceneD extends Phaser.Scene {
         var cursor = {x: 0, y: 0};
         var name = '';
 
+        // Load high scores from localStorage or use defaults
+        var originalHighScores = this.loadHighScores();
+
+        // Check if current score qualifies for high scores
+        var scorePosition = -1;
+        var newHighScore = false;
+
+        for (var i = 0; i < originalHighScores.length; i++) {
+            if (score > originalHighScores[i].score) {
+                scorePosition = i;
+                newHighScore = true;
+                break;
+            }
+        }
+
+        // Create a copy for display that includes the new score if it qualifies
+        var displayHighScores = [...originalHighScores];
+        if (newHighScore) {
+            // Insert the new score into the display array
+            displayHighScores.splice(scorePosition, 0, { score: score, initials: '???' });
+            // Remove the lowest score to keep only 5
+            displayHighScores = displayHighScores.slice(0, 5);
+        }
+
         var input = this.add.bitmapText(130, 50, 'arcade', 'ABCDEFGHIJ\n\nKLMNOPQRST\n\nUVWXYZ.-').setLetterSpacing(20);
 
         input.setInteractive();
@@ -311,13 +369,34 @@ class SceneD extends Phaser.Scene {
 
         var legend = this.add.bitmapText(80, 260, 'arcade', 'RANK  SCORE   NAME').setTint(0xff00ff);
 
-        this.add.bitmapText(80, 310, 'arcade', '1ST   50000    ').setTint(0xff0000);
-        this.add.bitmapText(80, 360, 'arcade', '2ND   40000    ICE').setTint(0xff8200);
-        this.add.bitmapText(80, 410, 'arcade', '3RD   30000    GOS').setTint(0xffff00);
-        this.add.bitmapText(80, 460, 'arcade', '4TH   20000    HRE').setTint(0x00ff00);
-        this.add.bitmapText(80, 510, 'arcade', '5TH   10000    ETE').setTint(0x00bfff);
+        // Display high scores using the display array
+        var scoreTexts = [];
+        var initialsTexts = [];
+        var colors = [0xff0000, 0xff8200, 0xffff00, 0x00ff00, 0x00bfff];
+        var ranks = ['1ST', '2ND', '3RD', '4TH', '5TH'];
 
-        var playerText = this.add.bitmapText(560, 310, 'arcade', name).setTint(0xff0000);
+        for (var i = 0; i < 5; i++) {
+            var yPos = 310 + (i * 50);
+            // Create the rank and score part
+            var scoreText = this.add.bitmapText(80, yPos, 'arcade',
+                ranks[i] + '   ' + displayHighScores[i].score.toString().padEnd(8)
+            ).setTint(colors[i]);
+            scoreTexts.push(scoreText);
+
+            // Create separate text for initials
+            var initialsText = this.add.bitmapText(560, yPos, 'arcade', displayHighScores[i].initials).setTint(colors[i]);
+            initialsTexts.push(initialsText);
+        }
+
+        // Reference to the player's initials text if they have a new high score
+        var playerText = null;
+        if (newHighScore && scorePosition !== -1) {
+            playerText = initialsTexts[scorePosition];
+            playerText.text = name; // Start with empty name
+        }
+
+        // Store references for the input handlers
+        var scene = this;
 
         this.input.keyboard.on('keyup', function (event) {
 
@@ -349,16 +428,34 @@ class SceneD extends Phaser.Scene {
                 //  Enter or Space
                 if (cursor.x === 9 && cursor.y === 2 && name.length > 0) {
                     //  Submit
+                    if (newHighScore && scorePosition !== -1) {
+                        // Create new high scores array by inserting the completed entry
+                        var updatedHighScores = [...originalHighScores];
+                        updatedHighScores.splice(scorePosition, 0, { score: score, initials: name });
+                        // Keep only top 5 scores
+                        updatedHighScores = updatedHighScores.slice(0, 5);
+
+                        // Save the updated high scores
+                        scene.saveHighScores(updatedHighScores);
+
+                        // Reset score to prevent duplicate display on restart
+                        score = 0;
+
+                        // Move to next scene or restart to show updated scores
+                        scene.scene.restart();
+                    }
                 } else if (cursor.x === 8 && cursor.y === 2 && name.length > 0) {
                     //  Rub
                     name = name.substr(0, name.length - 1);
-
-                    playerText.text = name;
+                    if (playerText) {
+                        playerText.text = name;
+                    }
                 } else if (name.length < 3) {
                     //  Add
                     name = name.concat(chars[cursor.y][cursor.x]);
-
-                    playerText.text = name;
+                    if (playerText) {
+                        playerText.text = name;
+                    }
                 }
             }
 
@@ -393,15 +490,33 @@ class SceneD extends Phaser.Scene {
             if (char === '<' && name.length > 0) {
                 //  Rub
                 name = name.substr(0, name.length - 1);
-
-                playerText.text = name;
+                if (playerText) {
+                    playerText.text = name;
+                }
             } else if (char === '>' && name.length > 0) {
                 //  Submit
+                if (newHighScore && scorePosition !== -1) {
+                    // Create new high scores array by inserting the completed entry
+                    var updatedHighScores = [...originalHighScores];
+                    updatedHighScores.splice(scorePosition, 0, { score: score, initials: name });
+                    // Keep only top 5 scores
+                    updatedHighScores = updatedHighScores.slice(0, 5);
+
+                    // Save the updated high scores
+                    scene.saveHighScores(updatedHighScores);
+
+                    // Reset score to prevent duplicate display on restart
+                    score = 0;
+
+                    // Move to next scene or restart to show updated scores
+                    scene.scene.restart();
+                }
             } else if (name.length < 3) {
                 //  Add
                 name = name.concat(char);
-
-                playerText.text = name;
+                if (playerText) {
+                    playerText.text = name;
+                }
             }
 
         }, this);
@@ -417,7 +532,10 @@ function collectStar(player, star) {
     scoreText.setText('score: ' + score);
 
     if (score > hiScore) {
-        hiScoreText.setText('Hi Score: ' + score);
+        hiScore = score;
+        hiScoreText.setText('Hi Score: ' + hiScore);
+        // Save the new high score to localStorage
+        localStorage.setItem('hiScore', hiScore);
     }
 
     if (stars.countActive(true) === 0) {
@@ -480,7 +598,7 @@ let config = {
         height: height
     },
     pixelArt: true,
-    physics: { 
+    physics: {
         default: 'arcade',
         arcade: {
             gravity: { y: 300 },
