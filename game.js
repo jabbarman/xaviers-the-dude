@@ -7,7 +7,8 @@ let debug = false;
 let starsPerWave = 10; // NB the actual no will be 1 more as it creates the 1st one and then repeats by this vsalue
 let lives = 3;
 let score = 0;
-let hiScore = 100;
+// Load hiScore from localStorage if available, otherwise use default value
+let hiScore = localStorage.getItem('hiScore') ? parseInt(localStorage.getItem('hiScore')) : 100;
 let wave = 1;
 let portalJump = false;
 let gameOver = false;
@@ -27,6 +28,7 @@ if (debug) {
     starsPerWave = 0;
     lives = 1;
     hiScore = 0;
+    localStorage.setItem('hiScore', hiScore);
 }
 
 class SceneA extends Phaser.Scene {
@@ -146,7 +148,7 @@ class SceneB extends Phaser.Scene {
         bombs = this.physics.add.group();
 
         //  The score
-        hiScoreText = this.add.text(280, 10, 'Hi Score: ' + score, {fontSize: '32px', fill: '#000'});
+        hiScoreText = this.add.text(280, 10, 'Hi Score: ' + hiScore, {fontSize: '32px', fill: '#000'});
         let textBlockPositionX = 15;
         let textBlockOffsetY = 12;
         livesText = this.add.text(textBlockPositionX, textBlockOffsetY, 'lives: ' + lives, {
@@ -271,7 +273,8 @@ class SceneC extends Phaser.Scene {
         let background = this.add.sprite(0, 0, 'background_image');
         background.setOrigin(0,0);
         this.add.text(180, 200, 'The End', { fontSize: '100px', color: '#0000FF' });
-        this.add.text(180, 350, 'High Score ' + score, { fontSize: '50px', color: '#0000FF' });
+        this.add.text(180, 300, 'Your Score ' + score, { fontSize: '50px', color: '#0000FF' });
+        this.add.text(180, 380, 'High Score ' + hiScore, { fontSize: '50px', color: '#0000FF' });
         this.input.on('pointerup', function () {
             this.scene.start('SceneD');
         }, this);
@@ -417,7 +420,10 @@ function collectStar(player, star) {
     scoreText.setText('score: ' + score);
 
     if (score > hiScore) {
-        hiScoreText.setText('Hi Score: ' + score);
+        hiScore = score;
+        hiScoreText.setText('Hi Score: ' + hiScore);
+        // Save the new high score to localStorage
+        localStorage.setItem('hiScore', hiScore);
     }
 
     if (stars.countActive(true) === 0) {
