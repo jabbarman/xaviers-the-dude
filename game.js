@@ -39,7 +39,7 @@ class SceneA extends Phaser.Scene {
 
     preload ()
     {
-        this.load.image('background_image', '/assets/sky.png');
+        this.load.image('background_image', 'assets/sky.png');
     }
 
     create ()
