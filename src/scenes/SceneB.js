@@ -106,7 +106,7 @@ export class SceneB extends Phaser.Scene {
 
     if (state.portalJump) {
       state.lives = state.lives + 1;
-      state.livesText.setText('lives: ' + state.lives);
+      this.game.events.emit('hud:lives', state.lives);
       if (state.bombs.countActive(true) > 0) {
         state.bombs.children.iterate(function (child) { child.disableBody(true, true); });
       }
