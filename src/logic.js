@@ -3,7 +3,6 @@
 // being bound to a Phaser.Scene as `this` when used as callbacks.
 
 import { state } from './state.js';
-import { WIDTH } from './config.js';
 
 export function collectStar(player, star) {
   this.sound.play('ping');
@@ -52,7 +51,7 @@ export function bounce() {
 
 export async function hitBomb(player, bomb) {
   state.lives -= 1;
-  this.game.events.emit('hud:lives', state.lives);;
+  this.game.events.emit('hud:lives', state.lives);
   this.physics.pause();
   this.sound.play('explode');
   if (state.lives > 0) {
