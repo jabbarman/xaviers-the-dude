@@ -11,11 +11,11 @@ export function collectStar(player, star) {
 
   // Add and update the score
   state.score += 10 * state.wave;
-  state.scoreText.setText('score: ' + state.score);
+  this.game.events.emit('hud:score', state.score);
 
   if (state.score > state.hiScore) {
     state.hiScore = state.score;
-    state.hiScoreText.setText('Hi Score: ' + state.hiScore);
+    this.game.events.emit('hud:hiscore', state.hiScore);
     try {
       localStorage.setItem('hiScore', state.hiScore);
     } catch (e) {}
@@ -36,7 +36,8 @@ export function collectStar(player, star) {
     bomb.allowGravity = false;
 
     state.wave += 1;
-    state.waveText.setText('wave : ' + state.wave);
+    this.game.events.emit('hud:wave', state.wave);
+    this.game.events.emit('wave:start', state.wave);
 
     if (state.wave % 6 === 0) {
       this.sound.play('portalJump');
@@ -51,7 +52,7 @@ export function bounce() {
 
 export async function hitBomb(player, bomb) {
   state.lives -= 1;
-  state.livesText.setText('lives: ' + state.lives);
+  this.game.events.emit('hud:lives', state.lives);;
   this.physics.pause();
   this.sound.play('explode');
   if (state.lives > 0) {

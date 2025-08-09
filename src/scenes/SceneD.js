@@ -32,13 +32,6 @@ export class SceneD extends Phaser.Scene {
     }
   }
 
-  preload() {
-    this.load.image('block', 'assets/input/block.png');
-    this.load.image('rub', 'assets/input/rub.png');
-    this.load.image('end', 'assets/input/end.png');
-    this.load.bitmapFont('arcade', 'assets/fonts/bitmap/arcade.png', 'assets/fonts/bitmap/arcade.xml');
-  }
-
   create() {
     var chars = [
       ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'],

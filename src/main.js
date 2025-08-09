@@ -6,6 +6,9 @@ import { SceneA } from './scenes/SceneA.js';
 import { SceneB } from './scenes/SceneB.js';
 import { SceneC } from './scenes/SceneC.js';
 import { SceneD } from './scenes/SceneD.js';
+import { Preloader } from './scenes/Preloader.js';
+import { UIScene } from './scenes/UIScene.js';
+import { PostFXScene } from './scenes/PostFXScene.js';
 
 const config = {
   type: Phaser.AUTO,
@@ -17,6 +20,7 @@ const config = {
     height: HEIGHT
   },
   pixelArt: true,
+  render: { pixelArt: true, roundPixels: true },
   physics: {
     default: 'arcade',
     arcade: {
@@ -24,7 +28,7 @@ const config = {
       debug: false
     }
   },
-  scene: [SceneA, SceneB, SceneC, SceneD]
+  scene: [Preloader, SceneA, SceneB, SceneC, SceneD, UIScene, PostFXScene],
 };
 
 // eslint-disable-next-line no-new

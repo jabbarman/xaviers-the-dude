@@ -7,23 +7,15 @@ export class SceneB extends Phaser.Scene {
     super('SceneB');
   }
 
-  preload() {
-    this.load.image('sky', 'assets/sky.png');
-    this.load.image('ground', 'assets/platform.png');
-    this.load.image('star', 'assets/star.png');
-    this.load.image('bomb', 'assets/bomb.png');
-    this.load.spritesheet('dude', 'assets/dude.png', { frameWidth: 32, frameHeight: 48 });
-    this.load.spritesheet('fullscreen', 'assets/fullscreen.png', { frameWidth: 64, frameHeight: 64 });
-    this.load.audio('boden', ['assets/audio/bodenstaendig_2000_in_rock_4bit.mp3', 'assets/audio/bodenstaendig_2000_in_rock_4bit.ogg']);
-    this.load.audio('tommy', 'assets/audio/tommy_in_goa.mp3');
-    this.load.audio('gameOver', 'assets/audio/SoundEffects/player_death.wav');
-    this.load.audio('ping', 'assets/audio/SoundEffects/p-ping.mp3');
-    this.load.audio('explode', 'assets/audio/SoundEffects/explosion.mp3');
-    this.load.audio('bounce', 'assets/audio/SoundEffects/mario-jumping-sound.mp3');
-    this.load.audio('portalJump', 'assets/audio/SoundEffects/pickup.wav');
-  }
-
   create() {
+    // Launch overlay scenes
+    this.scene.launch('UIScene');
+    this.scene.launch('PostFXScene');
+    this.game.events.emit('hud:lives',  state.lives);
+    this.game.events.emit('hud:score',  state.score);
+    this.game.events.emit('hud:hiscore',state.hiScore);
+    this.game.events.emit('hud:wave',   state.wave);
+    this.game.events.emit('wave:start', state.wave);
     // Music
     state.music = this.sound.add('boden');
     state.music.play();
@@ -64,14 +56,6 @@ export class SceneB extends Phaser.Scene {
 
     // Bombs
     state.bombs = this.physics.add.group();
-
-    // UI Text
-    state.hiScoreText = this.add.text(280, 10, 'Hi Score: ' + state.hiScore, { fontSize: '32px', fill: '#000' });
-    const textBlockPositionX = 15;
-    const textBlockOffsetY = 12;
-    state.livesText = this.add.text(textBlockPositionX, textBlockOffsetY, 'lives: ' + state.lives, { fontSize: '14px', fill: '#000' });
-    state.waveText = this.add.text(textBlockPositionX, textBlockOffsetY * 2, 'wave : ' + state.wave, { fontSize: '14px', fill: '#000' });
-    state.scoreText = this.add.text(textBlockPositionX, textBlockOffsetY * 3, 'score: ' + state.score, { fontSize: '14px', fill: '#000' });
 
     // Game over text (scene property, not in state to avoid leakage across runs)
     this.gameOverText = this.add.text(400, 300, 'Game Over', { fontSize: '64px', fill: '#000' });
