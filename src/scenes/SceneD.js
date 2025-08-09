@@ -33,6 +33,9 @@ export class SceneD extends Phaser.Scene {
   }
 
   create() {
+    // Ensure overlays are hidden/removed on the final scene
+    this.scene.stop('UIScene');
+    this.scene.stop('PostFXScene');
     var chars = [
       ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'],
       ['K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T'],
