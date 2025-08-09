@@ -14,8 +14,9 @@ A JavaScript game based upon the popular Phaser graphics library. This game feat
 ## Technical Details
 
 - Built with Phaser 3.90.0 (latest version as of August 2025)
-- Pure JavaScript implementation
+- Pure JavaScript implementation using ES modules for maintainability
 - No build tools required - runs directly in the browser
+- Modular structure under `src/` (scenes, shared state, config, and logic)
 
 ## How to Run
 
