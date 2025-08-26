@@ -1,8 +1,8 @@
 import { state } from '../state.js';
 
-export class SceneD extends Phaser.Scene {
+export class SceneHighScore extends Phaser.Scene {
   constructor() {
-    super('SceneD');
+    super('SceneHighScore');
   }
 
   loadHighScores() {

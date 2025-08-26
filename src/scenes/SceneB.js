@@ -16,23 +16,41 @@ export class SceneB extends Phaser.Scene {
     this.game.events.emit('hud:hiscore',state.hiScore);
     this.game.events.emit('hud:wave',   state.wave);
     this.game.events.emit('wave:start', state.wave);
-    // Music
-    state.music = this.sound.add('boden');
+
+    // Determine variant (from scene data or state)
+    const dataVariant = this.scene.settings?.data?.variantIndex;
+    if (typeof dataVariant === 'number') {
+      state.variantIndex = dataVariant;
+    }
+
+    // Music per variant: base is 'boden', variants use 'tommy'
+    if (state.music) { try { state.music.stop(); } catch(e){} }
+    const musicKey = state.variantIndex > 0 ? 'tommy' : 'boden';
+    state.music = this.sound.add(musicKey);
     state.music.play();
     this.sound.add('gameOver');
     this.sound.add('ping');
     this.sound.add('explode');
     this.sound.add('portalJump');
 
-    // Background
-    this.add.image(WIDTH / 2, HEIGHT / 2, 'sky');
+    // Background varies with variant
+    // Use starry sky after a portal jump (variantIndex > 0)
+    const bgKey = (state.variantIndex > 0) ? 'starrysky' : 'sky';
+    this.add.image(WIDTH / 2, HEIGHT / 2, bgKey);
 
-    // Platforms
+    // Platforms vary slightly with variant to create a "SceneD" flavor
     state.platforms = this.physics.add.staticGroup();
-    state.platforms.create(400, 568, 'ground').setScale(2).refreshBody();
-    state.platforms.create(600, 400, 'ground');
-    state.platforms.create(50, 250, 'ground');
-    state.platforms.create(750, 220, 'ground');
+    if (state.variantIndex % 2 === 1) {
+      state.platforms.create(400, 568, 'ground').setScale(2).refreshBody();
+      state.platforms.create(650, 420, 'ground');
+      state.platforms.create(120, 300, 'ground');
+      state.platforms.create(720, 180, 'ground');
+    } else {
+      state.platforms.create(400, 568, 'ground').setScale(2).refreshBody();
+      state.platforms.create(600, 400, 'ground');
+      state.platforms.create(50, 250, 'ground');
+      state.platforms.create(750, 220, 'ground');
+    }
 
     // Player
     state.player = this.physics.add.sprite(100, 450, 'dude');
@@ -104,21 +122,23 @@ export class SceneB extends Phaser.Scene {
       }, this);
     }
 
-    if (state.portalJump) {
-      state.lives = state.lives + 1;
-      this.game.events.emit('hud:lives', state.lives);
-      if (state.bombs.countActive(true) > 0) {
+    // Handle portal jump: delegate to PortalScene to animate and restart SceneB with a new variant
+    if (state.portalJump && state.lives > 0) {
+      state.portalJump = false; // prevent re-trigger
+
+      // Clear bombs to avoid stray collisions during transition
+      if (state.bombs?.countActive(true) > 0) {
         state.bombs.children.iterate(function (child) { child.disableBody(true, true); });
       }
-      state.bombs = this.physics.add.group();
-      this.physics.add.collider(state.bombs, state.platforms, bounce.bind(this), null, this);
-      this.physics.add.collider(state.player, state.bombs, hitBomb.bind(this), null, this);
 
-      state.music.stop();
-      state.music = this.sound.add('tommy');
-      state.music.play();
+      // Award an extra life on successful portal
+      state.lives += 1;
+      this.game.events.emit('hud:lives', state.lives);
 
-      state.portalJump = false;
+      // Pause physics and launch PortalScene on top
+      this.physics.pause();
+      const nextVariant = (state.variantIndex || 0) + 1;
+      this.scene.launch('PortalScene', { from: 'SceneB', to: 'SceneB', variantIndex: nextVariant });
     }
 
     if (state.cursors.left.isDown) {
