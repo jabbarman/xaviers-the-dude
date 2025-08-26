@@ -10,6 +10,7 @@ export const state = {
   wave: 1,
   portalJump: false,
   gameOver: false,
+  variantIndex: 0, // increments after each portal jump to alter SceneB variation
   player: null,
   stars: null,
   bombs: null,
