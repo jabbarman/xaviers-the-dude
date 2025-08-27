@@ -23,9 +23,12 @@ export class SceneB extends Phaser.Scene {
       state.variantIndex = dataVariant;
     }
 
-    // Music per variant: base is 'boden', variants use 'tommy'
+    // Music per variant
+    // 0: sky -> 'boden'
+    // 1: starrysky -> 'tommy'
+    // 2+: saturnsky -> 'boden' (recycle first track)
     if (state.music) { try { state.music.stop(); } catch(e){} }
-    const musicKey = state.variantIndex > 0 ? 'tommy' : 'boden';
+    const musicKey = (state.variantIndex === 0) ? 'boden' : (state.variantIndex === 1 ? 'tommy' : 'boden');
     state.music = this.sound.add(musicKey);
     state.music.play();
     this.sound.add('gameOver');
@@ -34,8 +37,8 @@ export class SceneB extends Phaser.Scene {
     this.sound.add('portalJump');
 
     // Background varies with variant
-    // Use starry sky after a portal jump (variantIndex > 0)
-    const bgKey = (state.variantIndex > 0) ? 'starrysky' : 'sky';
+    // 0: sky, 1: starrysky, 2+: saturnsky
+    const bgKey = (state.variantIndex === 0) ? 'sky' : (state.variantIndex === 1 ? 'starrysky' : 'saturnsky');
     this.add.image(WIDTH / 2, HEIGHT / 2, bgKey);
 
     // Platforms vary slightly with variant to create a "SceneD" flavor

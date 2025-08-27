@@ -7,7 +7,7 @@ A JavaScript game based upon the popular Phaser graphics library. This game feat
 - Multiple game scenes including start screen, gameplay, end screen, and high score input
 - Collect stars to increase your score
 - Avoid bombs or lose lives
-- Special portal jumps every 6 waves
+- Special portal jumps every 6 waves (new world each jump: Sky -> Starry -> Saturn)
 - Background music and sound effects
 - Mobile-friendly responsive design
 
