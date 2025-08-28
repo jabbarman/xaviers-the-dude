@@ -9,6 +9,7 @@ export class Preloader extends Phaser.Scene {
         this.load.image('background_image', 'assets/sky.png');
         this.load.image('sky', 'assets/sky.png');
         this.load.image('starrysky', 'assets/starrysky.png');
+        this.load.image('saturnsky', 'assets/saturnsky.png');
         this.load.image('ground', 'assets/platform.png');
         this.load.image('star', 'assets/star.png');
         this.load.image('bomb', 'assets/bomb.png');
