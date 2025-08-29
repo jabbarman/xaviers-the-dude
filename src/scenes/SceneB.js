@@ -1,6 +1,7 @@
 import { WIDTH, HEIGHT } from '../config.js';
 import { state } from '../state.js';
 import { collectStar, bounce, hitBomb } from '../logic.js';
+import { BACKGROUND_SEQUENCE, musicForBackground } from '../backgrounds.js';
 
 export class SceneB extends Phaser.Scene {
   constructor() {
@@ -23,12 +24,14 @@ export class SceneB extends Phaser.Scene {
       state.variantIndex = dataVariant;
     }
 
-    // Music per variant
-    // 0: sky -> 'boden'
-    // 1: starrysky -> 'tommy'
-    // 2+: saturnsky -> 'boden' (recycle first track)
+    // Music per variant (future-proof): map by background key
     if (state.music) { try { state.music.stop(); } catch(e){} }
-    const musicKey = (state.variantIndex === 0) ? 'boden' : (state.variantIndex === 1 ? 'tommy' : 'boden');
+    // Determine background key from variant: 0 => sky, 1+ follow BACKGROUND_SEQUENCE
+    const sequenceLen = BACKGROUND_SEQUENCE.length;
+    const bgKey = (state.variantIndex === 0)
+      ? 'sky'
+      : BACKGROUND_SEQUENCE[((state.variantIndex - 1) % sequenceLen + sequenceLen) % sequenceLen];
+    const musicKey = musicForBackground(bgKey);
     state.music = this.sound.add(musicKey);
     state.music.play();
     this.sound.add('gameOver');
@@ -36,9 +39,7 @@ export class SceneB extends Phaser.Scene {
     this.sound.add('explode');
     this.sound.add('portalJump');
 
-    // Background varies with variant
-    // 0: sky, 1: starrysky, 2+: saturnsky
-    const bgKey = (state.variantIndex === 0) ? 'sky' : (state.variantIndex === 1 ? 'starrysky' : 'saturnsky');
+    // Background varies with variant: draw selected background
     this.add.image(WIDTH / 2, HEIGHT / 2, bgKey);
 
     // Platforms vary slightly with variant to create a "SceneD" flavor
@@ -134,7 +135,7 @@ export class SceneB extends Phaser.Scene {
         state.bombs.children.iterate(function (child) { child.disableBody(true, true); });
       }
 
-      // Award an extra life on successful portal
+      // Award an extra life on a successful portal
       state.lives += 1;
       this.game.events.emit('hud:lives', state.lives);
 

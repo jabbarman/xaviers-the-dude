@@ -10,6 +10,11 @@ export class Preloader extends Phaser.Scene {
         this.load.image('sky', 'assets/sky.png');
         this.load.image('starrysky', 'assets/starrysky.png');
         this.load.image('saturnsky', 'assets/saturnsky.png');
+        this.load.image('asteroidfield', 'assets/asteroidfield.png');
+        this.load.image('deepspace_comets', 'assets/deepspace_comets.png');
+        this.load.image('intergalactic_galaxy', 'assets/intergalactic_galaxy.png');
+        this.load.image('earthlike_spaceships', 'assets/earthlike_spaceships.png');
+        this.load.image('alien_landscape', 'assets/alien_landscape.png');
         this.load.image('ground', 'assets/platform.png');
         this.load.image('star', 'assets/star.png');
         this.load.image('bomb', 'assets/bomb.png');
