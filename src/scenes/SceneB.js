@@ -42,18 +42,23 @@ export class SceneB extends Phaser.Scene {
     // Background varies with variant: draw selected background
     this.add.image(WIDTH / 2, HEIGHT / 2, bgKey);
 
+    // Choose platform texture based on background
+    const groundKey = (bgKey === 'alien_landscape')
+      ? 'ground_alien'
+      : (bgKey !== 'sky' ? 'ground_space' : 'ground');
+
     // Platforms vary slightly with variant to create a "SceneD" flavor
     state.platforms = this.physics.add.staticGroup();
     if (state.variantIndex % 2 === 1) {
-      state.platforms.create(400, 568, 'ground').setScale(2).refreshBody();
-      state.platforms.create(650, 420, 'ground');
-      state.platforms.create(120, 300, 'ground');
-      state.platforms.create(720, 180, 'ground');
+      state.platforms.create(400, 568, groundKey).setScale(2).refreshBody();
+      state.platforms.create(650, 420, groundKey);
+      state.platforms.create(120, 300, groundKey);
+      state.platforms.create(720, 180, groundKey);
     } else {
-      state.platforms.create(400, 568, 'ground').setScale(2).refreshBody();
-      state.platforms.create(600, 400, 'ground');
-      state.platforms.create(50, 250, 'ground');
-      state.platforms.create(750, 220, 'ground');
+      state.platforms.create(400, 568, groundKey).setScale(2).refreshBody();
+      state.platforms.create(600, 400, groundKey);
+      state.platforms.create(50, 250, groundKey);
+      state.platforms.create(750, 220, groundKey);
     }
 
     // Player
