@@ -6,7 +6,7 @@ export class Preloader extends Phaser.Scene {
         this.load.bitmapFont('arcade', 'assets/fonts/bitmap/arcade.png', 'assets/fonts/bitmap/arcade.xml');
 
         // Images & sprites
-        this.load.image('background_image', 'assets/sky.png');
+        this.load.image('background_image', 'assets/earthlike_spaceships.png');
         this.load.image('sky', 'assets/sky.png');
         this.load.image('starrysky', 'assets/starrysky.png');
         this.load.image('saturnsky', 'assets/saturnsky.png');
