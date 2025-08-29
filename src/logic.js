@@ -38,7 +38,7 @@ export function collectStar(player, star) {
     this.game.events.emit('hud:wave', state.wave);
     this.game.events.emit('wave:start', state.wave);
 
-    if (state.wave % 6 === 0) {
+    if (state.wave % 5 === 0) {
       this.sound.play('portalJump');
       state.portalJump = true;
     }
