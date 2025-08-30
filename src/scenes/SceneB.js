@@ -8,6 +8,13 @@ export class SceneB extends Phaser.Scene {
     super('SceneB');
   }
 
+  init(data) {
+    // Ensure variantIndex is updated when SceneB is (re)started with data
+    if (typeof data?.variantIndex === 'number') {
+      state.variantIndex = data.variantIndex;
+    }
+  }
+
   create() {
     // Launch overlay scenes
     this.scene.launch('UIScene');
@@ -18,19 +25,12 @@ export class SceneB extends Phaser.Scene {
     this.game.events.emit('hud:wave',   state.wave);
     this.game.events.emit('wave:start', state.wave);
 
-    // Determine variant (from scene data or state)
-    const dataVariant = this.scene.settings?.data?.variantIndex;
-    if (typeof dataVariant === 'number') {
-      state.variantIndex = dataVariant;
-    }
-
     // Music per variant (future-proof): map by background key
     if (state.music) { try { state.music.stop(); } catch(e){} }
-    // Determine background key from variant: 0 => sky, 1+ follow BACKGROUND_SEQUENCE
-    const sequenceLen = BACKGROUND_SEQUENCE.length;
-    const bgKey = (state.variantIndex === 0)
-      ? 'sky'
-      : BACKGROUND_SEQUENCE[((state.variantIndex - 1) % sequenceLen + sequenceLen) % sequenceLen];
+    // Determine background key from variant consistently
+    const bgKey = this.sys.game.config.backgroundForVariant
+      ? this.sys.game.config.backgroundForVariant(state.variantIndex)
+      : (state.variantIndex === 0 ? 'sky' : BACKGROUND_SEQUENCE[(state.variantIndex - 1 + BACKGROUND_SEQUENCE.length) % BACKGROUND_SEQUENCE.length]);
     const musicKey = musicForBackground(bgKey);
     state.music = this.sound.add(musicKey);
     state.music.play();
