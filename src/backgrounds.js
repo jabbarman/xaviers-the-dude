@@ -26,13 +26,13 @@ export function backgroundForVariant(variantIndex){
 // This anticipates new tracks per background; default to an existing fallback.
 export const MUSIC_FOR_BACKGROUND = {
   sky: 'boden',
-  starrysky: 'tommy',
-  asteroidfield: 'boden',
-  saturnsky: 'boden',
-  deepspace_comets: 'boden',
-  intergalactic_galaxy: 'boden',
-  earthlike_spaceships: 'boden',
-  alien_landscape: 'boden'
+  starrysky: 'iLoveMy8bit',
+  asteroidfield: '8BitMusic',
+  saturnsky: 'flat8bit',
+  deepspace_comets: 'iLoveMy8bit',
+  intergalactic_galaxy: '8BitMusic',
+  earthlike_spaceships: 'flat8bit',
+  alien_landscape: 'tommy'
 };
 
 export function musicForBackground(bgKey){
