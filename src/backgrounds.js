@@ -25,16 +25,16 @@ export function backgroundForVariant(variantIndex){
 // Music plan: placeholder mapping aligned with BACKGROUND_SEQUENCE order.
 // This anticipates new tracks per background; default to an existing fallback.
 export const MUSIC_FOR_BACKGROUND = {
-  sky: 'boden',
-  starrysky: 'iLoveMy8bit',
+  sky: 'iLoveMy8bit',
+  starrysky: 'boden',
   asteroidfield: '8BitMusic',
   saturnsky: 'flat8bit',
-  deepspace_comets: 'iLoveMy8bit',
-  intergalactic_galaxy: '8BitMusic',
-  earthlike_spaceships: 'flat8bit',
+  deepspace_comets: '8bitTheme',
+  intergalactic_galaxy: 'pixelParadise',
+  earthlike_spaceships: 'percussiveDubstep',
   alien_landscape: 'tommy'
 };
 
 export function musicForBackground(bgKey){
-  return MUSIC_FOR_BACKGROUND[bgKey] || 'boden';
+  return MUSIC_FOR_BACKGROUND[bgKey] || 'iLoveMy8bit';
 }
