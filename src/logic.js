@@ -38,8 +38,8 @@ export function collectStar(player, star) {
     this.game.events.emit('hud:wave', state.wave);
     this.game.events.emit('wave:start', state.wave);
 
-    // Extra bomb at the start of every 4th wave
-    if (state.wave % 4 === 0) {
+    // Extra bomb just before the portal jump
+    if ((state.wave + 1) % 5 === 0) {
       let xb = (player.x < 400) ? Phaser.Math.Between(400, 800) : Phaser.Math.Between(0, 400);
       let bonusBomb = state.bombs.create(xb, 16, 'bomb');
       bonusBomb.setBounce(1);
