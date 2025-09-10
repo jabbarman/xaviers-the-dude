@@ -1,10 +1,18 @@
 import { WIDTH, HEIGHT } from '../config.js';
 import { state } from '../state.js';
 import { collectStar, bounce, hitBomb } from '../logic.js';
+import { BACKGROUND_SEQUENCE, musicForBackground } from '../backgrounds.js';
 
 export class SceneB extends Phaser.Scene {
   constructor() {
     super('SceneB');
+  }
+
+  init(data) {
+    // Ensure variantIndex is updated when SceneB is (re)started with data
+    if (typeof data?.variantIndex === 'number') {
+      state.variantIndex = data.variantIndex;
+    }
   }
 
   create() {
@@ -17,18 +25,13 @@ export class SceneB extends Phaser.Scene {
     this.game.events.emit('hud:wave',   state.wave);
     this.game.events.emit('wave:start', state.wave);
 
-    // Determine variant (from scene data or state)
-    const dataVariant = this.scene.settings?.data?.variantIndex;
-    if (typeof dataVariant === 'number') {
-      state.variantIndex = dataVariant;
-    }
-
-    // Music per variant
-    // 0: sky -> 'boden'
-    // 1: starrysky -> 'tommy'
-    // 2+: saturnsky -> 'boden' (recycle first track)
+    // Music per variant (future-proof): map by background key
     if (state.music) { try { state.music.stop(); } catch(e){} }
-    const musicKey = (state.variantIndex === 0) ? 'boden' : (state.variantIndex === 1 ? 'tommy' : 'boden');
+    // Determine background key from variant consistently
+    const bgKey = this.sys.game.config.backgroundForVariant
+      ? this.sys.game.config.backgroundForVariant(state.variantIndex)
+      : (state.variantIndex === 0 ? 'sky' : BACKGROUND_SEQUENCE[(state.variantIndex - 1 + BACKGROUND_SEQUENCE.length) % BACKGROUND_SEQUENCE.length]);
+    const musicKey = musicForBackground(bgKey);
     state.music = this.sound.add(musicKey);
     state.music.play();
     this.sound.add('gameOver');
@@ -36,23 +39,26 @@ export class SceneB extends Phaser.Scene {
     this.sound.add('explode');
     this.sound.add('portalJump');
 
-    // Background varies with variant
-    // 0: sky, 1: starrysky, 2+: saturnsky
-    const bgKey = (state.variantIndex === 0) ? 'sky' : (state.variantIndex === 1 ? 'starrysky' : 'saturnsky');
+    // Background varies with variant: draw selected background
     this.add.image(WIDTH / 2, HEIGHT / 2, bgKey);
+
+    // Choose platform texture based on background
+    const groundKey = (bgKey === 'alien_landscape')
+      ? 'ground_alien'
+      : (bgKey !== 'sky' ? 'ground_space' : 'ground');
 
     // Platforms vary slightly with variant to create a "SceneD" flavor
     state.platforms = this.physics.add.staticGroup();
     if (state.variantIndex % 2 === 1) {
-      state.platforms.create(400, 568, 'ground').setScale(2).refreshBody();
-      state.platforms.create(650, 420, 'ground');
-      state.platforms.create(120, 300, 'ground');
-      state.platforms.create(720, 180, 'ground');
+      state.platforms.create(400, 568, groundKey).setScale(2).refreshBody();
+      state.platforms.create(650, 420, groundKey);
+      state.platforms.create(120, 300, groundKey);
+      state.platforms.create(720, 180, groundKey);
     } else {
-      state.platforms.create(400, 568, 'ground').setScale(2).refreshBody();
-      state.platforms.create(600, 400, 'ground');
-      state.platforms.create(50, 250, 'ground');
-      state.platforms.create(750, 220, 'ground');
+      state.platforms.create(400, 568, groundKey).setScale(2).refreshBody();
+      state.platforms.create(600, 400, groundKey);
+      state.platforms.create(50, 250, groundKey);
+      state.platforms.create(750, 220, groundKey);
     }
 
     // Player
@@ -134,7 +140,7 @@ export class SceneB extends Phaser.Scene {
         state.bombs.children.iterate(function (child) { child.disableBody(true, true); });
       }
 
-      // Award an extra life on successful portal
+      // Award an extra life on a successful portal
       state.lives += 1;
       this.game.events.emit('hud:lives', state.lives);
 

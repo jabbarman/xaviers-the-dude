@@ -1,5 +1,5 @@
 // Animated portal transition scene
-// Launched on top of SceneB when wave 6,12,... is completed and player is alive.
+// Launched on top of SceneB when wave 5,10,... is completed and player is alive.
 // After a short animation, it restarts SceneB with a new variantIndex to create a new "world" without duplicating SceneB code.
 
 export class PortalScene extends Phaser.Scene {

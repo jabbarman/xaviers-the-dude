@@ -38,7 +38,17 @@ export function collectStar(player, star) {
     this.game.events.emit('hud:wave', state.wave);
     this.game.events.emit('wave:start', state.wave);
 
-    if (state.wave % 6 === 0) {
+    // Extra bomb just before the portal jump
+    if ((state.wave + 1) % 5 === 0) {
+      let xb = (player.x < 400) ? Phaser.Math.Between(400, 800) : Phaser.Math.Between(0, 400);
+      let bonusBomb = state.bombs.create(xb, 16, 'bomb');
+      bonusBomb.setBounce(1);
+      bonusBomb.setCollideWorldBounds(true);
+      bonusBomb.setVelocity(Phaser.Math.Between(-200, 200), 20);
+      bonusBomb.allowGravity = false;
+    }
+
+    if (state.wave % 5 === 0) {
       this.sound.play('portalJump');
       state.portalJump = true;
     }
