@@ -142,10 +142,19 @@ export class SceneB extends Phaser.Scene {
       this.gameOverText.visible = true;
       if (!this._endBound) {
         this._endBound = true;
-        // Register a one-time pointerup to proceed to SceneC to avoid duplicate handlers
-        this.input.once('pointerup', () => {
-          this.scene.start('SceneC');
-        });
+
+        const goToScores = () => {
+            if (this._endTriggered) return;
+            this._endTriggered = true;
+            this.scene.start('SceneC');
+        };
+
+        // Allow click/tap, Enter, Space to proceed, and auto-advance after 3s
+        this.input.once('pointerup', goToScores);
+        const KeyCodes = Phaser.Input.Keyboard.KeyCodes;
+        this.input.keyboard?.once('keydown-ENTER', goToScores);
+        this.input.keyboard?.once('keydown-SPACE', goToScores);
+        this.time.delayedCall(3000, goToScores);
       }
     }
 
