@@ -8,7 +8,6 @@ import { SceneC } from './scenes/SceneC.js';
 import { SceneHighScore } from './scenes/SceneHighScore.js';
 import { Preloader } from './scenes/Preloader.js';
 import { UIScene } from './scenes/UIScene.js';
-import { PostFXScene } from './scenes/PostFXScene.js';
 import { PortalScene } from './scenes/PortalScene.js';
 import { backgroundForVariant } from './backgrounds.js';
 
@@ -30,7 +29,7 @@ const config = {
       debug: false
     }
   },
-  scene: [Preloader, SceneA, SceneB, SceneC, SceneHighScore, UIScene, PostFXScene, PortalScene],
+  scene: [Preloader, SceneA, SceneB, SceneC, SceneHighScore, UIScene, PortalScene],
 };
 
 // Attach tooling hook for background variants

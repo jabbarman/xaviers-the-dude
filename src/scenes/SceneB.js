@@ -19,7 +19,6 @@ export class SceneB extends Phaser.Scene {
   create() {
     // Launch overlay scenes
     this.scene.launch('UIScene');
-    this.scene.launch('PostFXScene');
     this.game.events.emit('hud:lives',  state.lives);
     this.game.events.emit('hud:score',  state.score);
     this.game.events.emit('hud:hiscore',state.hiScore);

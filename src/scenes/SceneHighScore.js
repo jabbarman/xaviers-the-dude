@@ -34,7 +34,6 @@ export class SceneHighScore extends Phaser.Scene {
   create() {
     // Ensure overlays are hidden/removed on the final scene
     this.scene.stop('UIScene');
-    this.scene.stop('PostFXScene');
 
     // Keys: use explicit addKeys and KeyCodes for clarity
     const KeyCodes = Phaser.Input.Keyboard.KeyCodes;

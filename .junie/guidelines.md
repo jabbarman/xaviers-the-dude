@@ -59,8 +59,8 @@ Testing model in this project is browser-harness based (no Jest/Karma). Tests ar
   - Scene keys must match Phaser.Scene super("Key") usage. Maintain asset keys consistently; update preload/loaders where necessary.
   - Prefer small modules in src/ (scenes/*, logic.js, backgrounds.js, theme.js, state.js, config.js, main.js). Avoid circular imports.
 - Conventions captured in src/game_context_configuration.js:
-  - Scenes: SceneA (start), SceneB (gameplay), SceneC (optional game-over), SceneHighScore (entry input). Some optional overlays (UIScene, PostFXScene, PortalScene) may exist.
-  - Flow: Start at SceneA; pointerup -> SceneB; SceneB emits gameOver -> SceneC (optional); portalJump loops SceneB with variantIndex changes; UIScene/PostFX overlays are associated with SceneB and stopped in SceneHighScore.
+  - Scenes: SceneA (start), SceneB (gameplay), SceneC (optional game-over), SceneHighScore (entry input). Some optional overlays (UIScene, PortalScene) may exist.
+  - Flow: Start at SceneA; pointerup -> SceneB; SceneB emits gameOver -> SceneC (optional); portalJump loops SceneB with variantIndex changes; UIScene overlays are associated with SceneB and stopped in SceneHighScore.
   - State and persistence: localStorage keys hiScore and highScores. Global HUD event names include hud:lives, hud:score, hud:hiscore, hud:wave, and wave:start. Variant and portal behavior noted.
   - Inputs: pointerup and keyboard (LEFT/RIGHT/UP, F in SceneB, ENTER/SPACE/ARROWS in SceneHighScore).
   - Assets: bitmap font arcade; spritesheets dude, star; FX audio keys gameOver, ping, explode, portalJump; images for background/platforms including optional variants.

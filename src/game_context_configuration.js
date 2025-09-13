@@ -35,7 +35,6 @@ const config = {
       { id: 'SceneHighScore', find: ['**/SceneHighScore.js'] },
       // Referenced/overlay scenes that may exist in the project:
       { id: 'UIScene', find: ['**/UIScene.js'], optional: true },
-      { id: 'PostFXScene', find: ['**/PostFXScene.js'], optional: true },
       { id: 'PortalScene', find: ['**/PortalScene.js'], optional: true },
       { id: 'SceneC', find: ['**/SceneC.js'], optional: true },
     ],
@@ -58,8 +57,8 @@ const config = {
       { from: 'SceneA', on: 'pointerup', to: 'SceneB' },
       { from: 'SceneB', on: 'gameOver', to: 'SceneC', optional: true },
       { from: 'SceneB', on: 'portalJump', to: 'SceneB', note: 'increments variantIndex via PortalScene' },
-      { from: 'SceneB', overlay: ['UIScene', 'PostFXScene'] },
-      { from: 'SceneHighScore', overlayStop: ['UIScene', 'PostFXScene'] },
+      { from: 'SceneB', overlay: ['UIScene'] },
+      { from: 'SceneHighScore', overlayStop: ['UIScene'] },
     ],
   },
 
