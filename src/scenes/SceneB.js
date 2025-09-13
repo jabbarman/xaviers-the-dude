@@ -129,9 +129,13 @@ export class SceneB extends Phaser.Scene {
     if (state.gameOver) {
       try { this.audio?.stop(); } catch(e){}
       this.gameOverText.visible = true;
-      this.input.on('pointerup', function () {
-        this.scene.start('SceneC');
-      }, this);
+      if (!this._endBound) {
+        this._endBound = true;
+        // Register a one-time pointerup to proceed to SceneC to avoid duplicate handlers
+        this.input.once('pointerup', () => {
+          this.scene.start('SceneC');
+        });
+      }
     }
 
     // Handle portal jump: delegate to PortalScene to animate and restart SceneB with a new variant

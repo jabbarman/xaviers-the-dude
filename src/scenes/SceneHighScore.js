@@ -36,6 +36,19 @@ export class SceneHighScore extends Phaser.Scene {
     // Ensure overlays are hidden/removed on the final scene
     this.scene.stop('UIScene');
     this.scene.stop('PostFXScene');
+
+    // Keys: use explicit addKeys and KeyCodes for clarity
+    const KeyCodes = Phaser.Input.Keyboard.KeyCodes;
+    this.keys = this.input.keyboard.addKeys({
+      left: KeyCodes.LEFT,
+      right: KeyCodes.RIGHT,
+      up: KeyCodes.UP,
+      down: KeyCodes.DOWN,
+      enter: KeyCodes.ENTER,
+      space: KeyCodes.SPACE,
+      esc: KeyCodes.ESC
+    });
+
     var chars = [
       ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'],
       ['K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T'],
@@ -97,32 +110,47 @@ export class SceneHighScore extends Phaser.Scene {
 
     var scene = this;
 
-    this.input.keyboard.on('keyup', function (event) {
-      if (event.keyCode === 37) {
-        if (cursor.x > 0) { cursor.x--; block.x -= 52; }
-      } else if (event.keyCode === 39) {
-        if (cursor.x < 9) { cursor.x++; block.x += 52; }
-      } else if (event.keyCode === 38) {
-        if (cursor.y > 0) { cursor.y--; block.y -= 64; }
-      } else if (event.keyCode === 40) {
-        if (cursor.y < 2) { cursor.y++; block.y += 64; }
-      } else if (event.keyCode === 13 || event.keyCode === 32) {
-        if (cursor.x === 9 && cursor.y === 2 && name.length > 0) {
-          if (newHighScore && scorePosition !== -1) {
-            var updatedHighScores = [...originalHighScores];
-            updatedHighScores.splice(scorePosition, 0, { score: state.score, initials: name });
-            updatedHighScores = updatedHighScores.slice(0, 5);
-            scene.saveHighScores(updatedHighScores);
-            state.reset();
-            scene.scene.start('SceneA');
+    this.input.keyboard.on('keyup', (event) => {
+      const kc = Phaser.Input.Keyboard.KeyCodes;
+      switch (event.keyCode) {
+        case kc.LEFT:
+          if (cursor.x > 0) { cursor.x--; block.x -= 52; }
+          break;
+        case kc.RIGHT:
+          if (cursor.x < 9) { cursor.x++; block.x += 52; }
+          break;
+        case kc.UP:
+          if (cursor.y > 0) { cursor.y--; block.y -= 64; }
+          break;
+        case kc.DOWN:
+          if (cursor.y < 2) { cursor.y++; block.y += 64; }
+          break;
+        case kc.ENTER:
+        case kc.SPACE:
+          if (cursor.x === 9 && cursor.y === 2 && name.length > 0) {
+            if (newHighScore && scorePosition !== -1) {
+              var updatedHighScores = [...originalHighScores];
+              updatedHighScores.splice(scorePosition, 0, { score: state.score, initials: name });
+              updatedHighScores = updatedHighScores.slice(0, 5);
+              scene.saveHighScores(updatedHighScores);
+              state.reset();
+              scene.scene.start('SceneA');
+            }
+          } else if (cursor.x === 8 && cursor.y === 2 && name.length > 0) {
+            name = name.substr(0, name.length - 1);
+            if (playerText) { playerText.text = name; }
+          } else if (name.length < 3) {
+            name = name.concat(chars[cursor.y][cursor.x]);
+            if (playerText) { playerText.text = name; }
           }
-        } else if (cursor.x === 8 && cursor.y === 2 && name.length > 0) {
-          name = name.substr(0, name.length - 1);
-          if (playerText) { playerText.text = name; }
-        } else if (name.length < 3) {
-          name = name.concat(chars[cursor.y][cursor.x]);
-          if (playerText) { playerText.text = name; }
-        }
+          break;
+        case kc.ESC:
+          // Cancel entry, go back to SceneA without saving
+          state.reset();
+          scene.scene.start('SceneA');
+          break;
+        default:
+          break;
       }
     });
 

@@ -14,11 +14,11 @@ A logically ordered, actionable checklist to improve architecture, code quality,
    - Add a small audio manager module (src/audio.js) that wraps sound add/stop and maps background -> track using musicForBackground.
    - Ensure tracks stop on scene shutdown/transition (SceneB shutdown, SceneC/SceneHighScore start). Guard against multiple overlapping sounds.
 
-4. [ ] Clean up global event listeners to prevent leaks
+4. [x] Clean up global event listeners to prevent leaks
    - In UIScene, remove listeners on scene shutdown (this.events.once('shutdown', ...)) for hud:* and wave:start.
    - In SceneB, avoid re-adding input handlers inside update when gameOver; move pointerup registration to create() gated by a gameOver flag or use once('pointerup').
 
-5. [ ] Normalize keyboard handling
+5. [x] Normalize keyboard handling
    - Replace raw keyCode checks in SceneHighScore with Phaser.Input.Keyboard.KeyCodes constants.
    - Add explicit cursors and Enter/Space keys via this.input.keyboard.addKeys for clarity and testability.
 
