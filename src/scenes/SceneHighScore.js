@@ -113,8 +113,8 @@ export class SceneHighScore extends Phaser.Scene {
             updatedHighScores.splice(scorePosition, 0, { score: state.score, initials: name });
             updatedHighScores = updatedHighScores.slice(0, 5);
             scene.saveHighScores(updatedHighScores);
-            state.score = 0;
-            scene.scene.restart();
+            state.reset();
+            scene.scene.start('SceneA');
           }
         } else if (cursor.x === 8 && cursor.y === 2 && name.length > 0) {
           name = name.substr(0, name.length - 1);
@@ -152,8 +152,8 @@ export class SceneHighScore extends Phaser.Scene {
           updatedHighScores.splice(scorePosition, 0, { score: state.score, initials: name });
           updatedHighScores = updatedHighScores.slice(0, 5);
           scene.saveHighScores(updatedHighScores);
-          state.score = 0;
-          scene.scene.restart();
+          state.reset();
+          scene.scene.start('SceneA');
         }
       } else if (name.length < 3) {
         name = name.concat(char);

@@ -2,15 +2,15 @@
 
 A logically ordered, actionable checklist to improve architecture, code quality, testing, tooling, and documentation of Xavier's The Dude. Check items off as you complete them.
 
-1. [ ] Establish explicit state reset lifecycle
+1. [x] Establish explicit state reset lifecycle
    - Create a state.reset() helper in src/state.js to restore defaults (lives, score, wave, flags, references) without reloading the page.
    - Call reset() when going from SceneA -> SceneB for a new run and after saving high scores in SceneHighScore, instead of only zeroing score. Document when to preserve hiScore/highScores.
 
-2. [ ] Unify background variant selection via a single hook
+2. [x] Unify background variant selection via a single hook
    - Export backgroundForVariant from src/backgrounds.js (already exists) and attach it on game.config in src/main.js so scenes can call this.sys.game.config.backgroundForVariant.
    - Replace any ad-hoc variant-to-background logic in SceneB with the unified helper only.
 
-3. [ ] Centralize music selection and lifecycle
+3. [x] Centralize music selection and lifecycle
    - Add a small audio manager module (src/audio.js) that wraps sound add/stop and maps background -> track using musicForBackground.
    - Ensure tracks stop on scene shutdown/transition (SceneB shutdown, SceneC/SceneHighScore start). Guard against multiple overlapping sounds.
 

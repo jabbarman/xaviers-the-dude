@@ -1,7 +1,8 @@
 import { WIDTH, HEIGHT } from '../config.js';
 import { state } from '../state.js';
 import { collectStar, bounce, hitBomb } from '../logic.js';
-import { BACKGROUND_SEQUENCE, musicForBackground } from '../backgrounds.js';
+import { BACKGROUND_SEQUENCE } from '../backgrounds.js';
+import { AudioManager } from '../audio.js';
 
 export class SceneB extends Phaser.Scene {
   constructor() {
@@ -25,19 +26,21 @@ export class SceneB extends Phaser.Scene {
     this.game.events.emit('hud:wave',   state.wave);
     this.game.events.emit('wave:start', state.wave);
 
-    // Music per variant (future-proof): map by background key
-    if (state.music) { try { state.music.stop(); } catch(e){} }
+    // Centralized music per background via AudioManager
+    this.audio = new AudioManager(this);
     // Determine background key from variant consistently
     const bgKey = this.sys.game.config.backgroundForVariant
       ? this.sys.game.config.backgroundForVariant(state.variantIndex)
       : (state.variantIndex === 0 ? 'sky' : BACKGROUND_SEQUENCE[(state.variantIndex - 1 + BACKGROUND_SEQUENCE.length) % BACKGROUND_SEQUENCE.length]);
-    const musicKey = musicForBackground(bgKey);
-    state.music = this.sound.add(musicKey);
-    state.music.play();
+    this.audio.playForBackground(bgKey);
+    // Preload/ensure SFX are ready
     this.sound.add('gameOver');
     this.sound.add('ping');
     this.sound.add('explode');
     this.sound.add('portalJump');
+
+    // Ensure track stops on scene shutdown/transition
+    this.events.once('shutdown', () => { try { this.audio.stop(); } catch(e){} });
 
     // Background varies with variant: draw selected background
     this.add.image(WIDTH / 2, HEIGHT / 2, bgKey);
@@ -124,7 +127,7 @@ export class SceneB extends Phaser.Scene {
 
   update(time, delta) {
     if (state.gameOver) {
-      state.music.stop();
+      try { this.audio?.stop(); } catch(e){}
       this.gameOverText.visible = true;
       this.input.on('pointerup', function () {
         this.scene.start('SceneC');

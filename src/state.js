@@ -20,7 +20,36 @@ export const state = {
   hiScoreText: null,
   waveText: null,
   livesText: null,
-  music: null
+  music: null,
+  /**
+   * Reset transient runtime state to defaults without touching persisted values
+   * such as hiScore and highScores. Use when starting a new run or after
+   * submitting a high score.
+   */
+  reset() {
+    this.debug = false;
+    this.starsPerWave = 10;
+    this.lives = 3;
+    this.score = 0;
+    // hiScore is preserved
+    this.wave = 1;
+    this.portalJump = false;
+    this.gameOver = false;
+    this.variantIndex = 0;
+    // Clear runtime references to allow GC between runs
+    this.player = null;
+    this.stars = null;
+    this.bombs = null;
+    this.platforms = null;
+    this.cursors = null;
+    this.scoreText = null;
+    this.hiScoreText = null;
+    this.waveText = null;
+    this.livesText = null;
+    // Stop and clear music handle if still active
+    try { this.music?.stop?.(); } catch(e) {}
+    this.music = null;
+  }
 };
 
 // Initialize hiScore from localStorage and handle debug tweaks similar to previous behavior.
