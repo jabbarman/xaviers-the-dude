@@ -1,4 +1,4 @@
-import { WIDTH, HEIGHT } from '../config.js';
+import { WIDTH, HEIGHT, PLAYER_SPEED_X, PLAYER_JUMP_VELOCITY, PLAYER_BOUNCE, STARS_BOUNCE_MIN, STARS_BOUNCE_MAX, PORTAL_EXTRA_LIFE, GAME_OVER_TEXT } from '../config.js';
 import { state } from '../state.js';
 import { collectStar, bounce, hitBomb } from '../logic.js';
 import { BACKGROUND_SEQUENCE } from '../backgrounds.js';
@@ -66,7 +66,7 @@ export class SceneB extends Phaser.Scene {
 
     // Player
     state.player = this.physics.add.sprite(100, 450, 'dude');
-    state.player.setBounce(0.2);
+    state.player.setBounce(PLAYER_BOUNCE);
     state.player.setCollideWorldBounds(true);
 
     // Animations
@@ -81,14 +81,26 @@ export class SceneB extends Phaser.Scene {
     const stepX = Math.floor(WIDTH / (state.starsPerWave + 1));
     state.stars = this.physics.add.group({ key: 'star', repeat: state.starsPerWave, setXY: { x: 12, y: 0, stepX } });
     state.stars.children.iterate(function (child) {
-      child.setBounceY(Phaser.Math.FloatBetween(0.4, 0.8));
+      child.setBounceY(Phaser.Math.FloatBetween(STARS_BOUNCE_MIN, STARS_BOUNCE_MAX));
     });
 
     // Bombs
     state.bombs = this.physics.add.group();
 
+    // Clean-up handlers to avoid lingering physics groups/timers
+    this.events.once('shutdown', () => {
+      try {
+        state.stars?.clear(true, true);
+        state.bombs?.clear(true, true);
+        state.platforms?.clear(true, true);
+      } catch(e) {}
+      try { this.tweens.killAll(); } catch(e) {}
+      try { this.time?.removeAllEvents(); } catch(e) {}
+      try { this.input?.removeAllListeners(); } catch(e) {}
+    });
+
     // Game over text (scene property, not in state to avoid leakage across runs)
-    this.gameOverText = this.add.text(400, 300, 'Game Over', { fontSize: '64px', fill: '#000' });
+    this.gameOverText = this.add.text(GAME_OVER_TEXT.x, GAME_OVER_TEXT.y, 'Game Over', { fontSize: GAME_OVER_TEXT.fontSize, fill: GAME_OVER_TEXT.fill });
     this.gameOverText.setOrigin(0.5);
     this.gameOverText.visible = false;
 
@@ -148,20 +160,21 @@ export class SceneB extends Phaser.Scene {
       }
 
       // Award an extra life on a successful portal
-      state.lives += 1;
+      state.lives += PORTAL_EXTRA_LIFE;
       this.game.events.emit('hud:lives', state.lives);
 
-      // Pause physics and launch PortalScene on top
+      // Disable input during transition, pause physics, and launch PortalScene on top
+      this.input.enabled = false;
       this.physics.pause();
       const nextVariant = (state.variantIndex || 0) + 1;
       this.scene.launch('PortalScene', { from: 'SceneB', to: 'SceneB', variantIndex: nextVariant });
     }
 
     if (state.cursors.left.isDown) {
-      state.player.setVelocityX(-160);
+      state.player.setVelocityX(-PLAYER_SPEED_X);
       state.player.anims.play('left', true);
     } else if (state.cursors.right.isDown) {
-      state.player.setVelocityX(160);
+      state.player.setVelocityX(PLAYER_SPEED_X);
       state.player.anims.play('right', true);
     } else {
       state.player.setVelocityX(0);
@@ -169,7 +182,7 @@ export class SceneB extends Phaser.Scene {
     }
 
     if (state.cursors.up.isDown && state.player.body.touching.down) {
-      state.player.setVelocityY(-330);
+      state.player.setVelocityY(PLAYER_JUMP_VELOCITY);
     }
   }
 }

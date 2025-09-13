@@ -22,19 +22,19 @@ A logically ordered, actionable checklist to improve architecture, code quality,
    - Replace raw keyCode checks in SceneHighScore with Phaser.Input.Keyboard.KeyCodes constants.
    - Add explicit cursors and Enter/Space keys via this.input.keyboard.addKeys for clarity and testability.
 
-6. [ ] Extract magic numbers to config
+6. [x] Extract magic numbers to config
    - Move movement velocities, jump strength, gravity, star score value, portal timing, and portal life reward into src/config.js.
    - Replace literals in SceneB and logic.js with named exports from config.
 
-7. [ ] Make portal transition robust
+7. [x] Make portal transition robust
    - Ensure SceneB disables input during portal transition and resumes cleanly after restart.
    - Verify bombs/stars/groups are cleared/GC’d to avoid collisions after portal. Add onShutdown handlers to destroy physics groups.
 
-8. [ ] Scene flow and consistency audit
+8. [x] Scene flow and consistency audit
    - Confirm scene keys match constructor strings (done) and that index.html loads all assets used by Preloader paths.
    - Ensure SceneC -> SceneHighScore -> SceneA navigation path is clear and documented; add a “Play Again” pointer/key in SceneHighScore to return to SceneA.
 
-9. [ ] Persistence utilities
+9. [x] Persistence utilities
    - Create a small module src/persistence.js for localStorage get/set with try/catch and defaulting.
    - Use it in state.js (hiScore) and SceneHighScore (highScores) to avoid duplication and ensure JSON safety.
 

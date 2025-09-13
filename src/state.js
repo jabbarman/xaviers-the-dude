@@ -52,23 +52,21 @@ export const state = {
   }
 };
 
+import { getString, setString } from './persistence.js';
+
 // Initialize hiScore from localStorage and handle debug tweaks similar to previous behavior.
 (function initializeState() {
   try {
-    const stored = localStorage.getItem('hiScore');
-    if (stored) {
-      state.hiScore = parseInt(stored);
+    const stored = getString('hiScore', String(state.hiScore));
+    state.hiScore = parseInt(stored);
+
+    if (state.debug) {
+      state.starsPerWave = 0;
+      state.lives = 1;
+      state.hiScore = 0;
+      setString('hiScore', String(state.hiScore));
     }
   } catch (e) {
     // If localStorage isn't available, keep default
-  }
-
-  if (state.debug) {
-    state.starsPerWave = 0;
-    state.lives = 1;
-    state.hiScore = 0;
-    try {
-      localStorage.setItem('hiScore', state.hiScore);
-    } catch (e) {}
   }
 })();

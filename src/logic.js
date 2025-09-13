@@ -3,20 +3,23 @@
 // being bound to a Phaser.Scene as `this` when used as callbacks.
 
 import { state } from './state.js';
+import { STAR_SCORE_BASE, BOMB_VELOCITY_MIN, BOMB_VELOCITY_MAX, BOMB_INITIAL_VY, PORTAL_WAVE_INTERVAL, EXTRA_BOMB_WAVE_BEFORE_PORTAL } from './config.js';
+import { setString } from './persistence.js';
 
 export function collectStar(player, star) {
   this.sound.play('ping');
   star.disableBody(true, true);
 
   // Add and update the score
-  state.score += 10 * state.wave;
+  state.score += STAR_SCORE_BASE * state.wave;
   this.game.events.emit('hud:score', state.score);
 
   if (state.score > state.hiScore) {
     state.hiScore = state.score;
     this.game.events.emit('hud:hiscore', state.hiScore);
     try {
-      localStorage.setItem('hiScore', state.hiScore);
+      // Persist hiScore via safe helper
+      setString('hiScore', String(state.hiScore));
     } catch (e) {}
   }
 
@@ -31,7 +34,7 @@ export function collectStar(player, star) {
     let bomb = state.bombs.create(x, 16, 'bomb');
     bomb.setBounce(1);
     bomb.setCollideWorldBounds(true);
-    bomb.setVelocity(Phaser.Math.Between(-200, 200), 20);
+    bomb.setVelocity(Phaser.Math.Between(BOMB_VELOCITY_MIN, BOMB_VELOCITY_MAX), BOMB_INITIAL_VY);
     bomb.allowGravity = false;
 
     state.wave += 1;
@@ -39,16 +42,16 @@ export function collectStar(player, star) {
     this.game.events.emit('wave:start', state.wave);
 
     // Extra bomb just before the portal jump
-    if ((state.wave + 1) % 5 === 0) {
+    if ((state.wave + EXTRA_BOMB_WAVE_BEFORE_PORTAL) % PORTAL_WAVE_INTERVAL === 0) {
       let xb = (player.x < 400) ? Phaser.Math.Between(400, 800) : Phaser.Math.Between(0, 400);
       let bonusBomb = state.bombs.create(xb, 16, 'bomb');
       bonusBomb.setBounce(1);
       bonusBomb.setCollideWorldBounds(true);
-      bonusBomb.setVelocity(Phaser.Math.Between(-200, 200), 20);
+      bonusBomb.setVelocity(Phaser.Math.Between(BOMB_VELOCITY_MIN, BOMB_VELOCITY_MAX), BOMB_INITIAL_VY);
       bonusBomb.allowGravity = false;
     }
 
-    if (state.wave % 5 === 0) {
+    if (state.wave % PORTAL_WAVE_INTERVAL === 0) {
       this.sound.play('portalJump');
       state.portalJump = true;
     }
