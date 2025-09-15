@@ -17,6 +17,10 @@ export class SceneB extends Phaser.Scene {
   }
 
   create() {
+    // Reset per-run scene toggles to avoid carry-over between restarts
+    this._endBound = false;
+    this.input.enabled = true;
+
     // Launch overlay scenes
     this.scene.launch('UIScene');
     this.game.events.emit('hud:lives',  state.lives);
@@ -101,6 +105,7 @@ export class SceneB extends Phaser.Scene {
     // Game over text (scene property, not in state to avoid leakage across runs)
     this.gameOverText = this.add.text(GAME_OVER_TEXT.x, GAME_OVER_TEXT.y, 'Game Over', { fontSize: GAME_OVER_TEXT.fontSize, fill: GAME_OVER_TEXT.fill });
     this.gameOverText.setOrigin(0.5);
+    this.gameOverText.setDepth(1000);
     this.gameOverText.visible = false;
 
     // Colliders
@@ -140,10 +145,17 @@ export class SceneB extends Phaser.Scene {
     if (state.gameOver) {
       try { this.audio?.stop(); } catch(e){}
       this.gameOverText.visible = true;
+
       if (!this._endBound) {
         this._endBound = true;
-        // Register a one-time pointerup to proceed to SceneC to avoid duplicate handlers
+
+        // Make sure inputs work at game-over, but keep HUD visible until we transition
+        this.input.enabled = true;
+
+        // Bind to this scene's input so it rebinds correctly on each run
         this.input.once('pointerup', () => {
+          // Now stop HUD and move to end scene
+          try { this.scene.stop('UIScene'); } catch (e) {}
           this.scene.start('SceneC');
         });
       }
