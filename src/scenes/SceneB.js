@@ -1,7 +1,9 @@
-import { WIDTH, HEIGHT } from '../config.js';
+import { WIDTH, HEIGHT, PLAYER_SPEED_X, PLAYER_JUMP_VELOCITY, PLAYER_BOUNCE, STARS_BOUNCE_MIN, STARS_BOUNCE_MAX, PORTAL_EXTRA_LIFE, GAME_OVER_TEXT } from '../config.js';
 import { state } from '../state.js';
 import { collectStar, bounce, hitBomb } from '../logic.js';
-import { BACKGROUND_SEQUENCE, musicForBackground } from '../backgrounds.js';
+import { BACKGROUND_SEQUENCE } from '../backgrounds.js';
+import { AudioManager } from '../audio.js';
+import { setupFullscreen } from '../ui/fullscreen.js';
 
 export class SceneB extends Phaser.Scene {
   constructor() {
@@ -16,28 +18,33 @@ export class SceneB extends Phaser.Scene {
   }
 
   create() {
+    // Reset per-run scene toggles to avoid carry-over between restarts
+    this._endBound = false;
+    this.input.enabled = true;
+
     // Launch overlay scenes
     this.scene.launch('UIScene');
-    this.scene.launch('PostFXScene');
     this.game.events.emit('hud:lives',  state.lives);
     this.game.events.emit('hud:score',  state.score);
     this.game.events.emit('hud:hiscore',state.hiScore);
     this.game.events.emit('hud:wave',   state.wave);
     this.game.events.emit('wave:start', state.wave);
 
-    // Music per variant (future-proof): map by background key
-    if (state.music) { try { state.music.stop(); } catch(e){} }
+    // Centralized music per background via AudioManager
+    this.audio = new AudioManager(this);
     // Determine background key from variant consistently
     const bgKey = this.sys.game.config.backgroundForVariant
       ? this.sys.game.config.backgroundForVariant(state.variantIndex)
       : (state.variantIndex === 0 ? 'sky' : BACKGROUND_SEQUENCE[(state.variantIndex - 1 + BACKGROUND_SEQUENCE.length) % BACKGROUND_SEQUENCE.length]);
-    const musicKey = musicForBackground(bgKey);
-    state.music = this.sound.add(musicKey);
-    state.music.play();
+    this.audio.playForBackground(bgKey);
+    // Preload/ensure SFX are ready
     this.sound.add('gameOver');
     this.sound.add('ping');
     this.sound.add('explode');
     this.sound.add('portalJump');
+
+    // Ensure track stops on scene shutdown/transition
+    this.events.once('shutdown', () => { try { this.audio.stop(); } catch(e){} });
 
     // Background varies with variant: draw selected background
     this.add.image(WIDTH / 2, HEIGHT / 2, bgKey);
@@ -63,7 +70,7 @@ export class SceneB extends Phaser.Scene {
 
     // Player
     state.player = this.physics.add.sprite(100, 450, 'dude');
-    state.player.setBounce(0.2);
+    state.player.setBounce(PLAYER_BOUNCE);
     state.player.setCollideWorldBounds(true);
 
     // Animations
@@ -78,15 +85,28 @@ export class SceneB extends Phaser.Scene {
     const stepX = Math.floor(WIDTH / (state.starsPerWave + 1));
     state.stars = this.physics.add.group({ key: 'star', repeat: state.starsPerWave, setXY: { x: 12, y: 0, stepX } });
     state.stars.children.iterate(function (child) {
-      child.setBounceY(Phaser.Math.FloatBetween(0.4, 0.8));
+      child.setBounceY(Phaser.Math.FloatBetween(STARS_BOUNCE_MIN, STARS_BOUNCE_MAX));
     });
 
     // Bombs
     state.bombs = this.physics.add.group();
 
+    // Clean-up handlers to avoid lingering physics groups/timers
+    this.events.once('shutdown', () => {
+      try {
+        state.stars?.clear(true, true);
+        state.bombs?.clear(true, true);
+        state.platforms?.clear(true, true);
+      } catch(e) {}
+      try { this.tweens.killAll(); } catch(e) {}
+      try { this.time?.removeAllEvents(); } catch(e) {}
+      try { this.input?.removeAllListeners(); } catch(e) {}
+    });
+
     // Game over text (scene property, not in state to avoid leakage across runs)
-    this.gameOverText = this.add.text(400, 300, 'Game Over', { fontSize: '64px', fill: '#000' });
+    this.gameOverText = this.add.text(GAME_OVER_TEXT.x, GAME_OVER_TEXT.y, 'Game Over', { fontSize: GAME_OVER_TEXT.fontSize, fill: GAME_OVER_TEXT.fill });
     this.gameOverText.setOrigin(0.5);
+    this.gameOverText.setDepth(1000);
     this.gameOverText.visible = false;
 
     // Colliders
@@ -98,37 +118,35 @@ export class SceneB extends Phaser.Scene {
     this.physics.add.overlap(state.player, state.stars, collectStar.bind(this), null, this);
     this.physics.add.collider(state.player, state.bombs, hitBomb.bind(this), null, this);
 
-    // Fullscreen button
-    const button = this.add.image(WIDTH - 16, 16, 'fullscreen', 0).setOrigin(1, 0).setInteractive();
-    button.on('pointerup', function () {
-      if (this.scale.isFullscreen) {
-        button.setFrame(0);
-        this.scale.stopFullscreen();
-      } else {
-        button.setFrame(1);
-        this.scale.startFullscreen();
-      }
-    }, this);
+    // Fullscreen UI via helper
+    setupFullscreen(this);
 
-    const FKey = this.input.keyboard.addKey('F');
-    FKey.on('down', function () {
-      if (this.scale.isFullscreen) {
-        button.setFrame(0);
-        this.scale.stopFullscreen();
-      } else {
-        button.setFrame(1);
-        this.scale.startFullscreen();
-      }
-    }, this);
+    // Global mute toggle (M) with indicator via UIScene
+    const MKey = this.input.keyboard.addKey('M');
+    MKey.on('down', () => {
+      const muted = this.audio.toggleMute();
+      this.game.events.emit('hud:mute', muted);
+    });
   }
 
   update(time, delta) {
     if (state.gameOver) {
-      state.music.stop();
+      try { this.audio?.stop(); } catch(e){}
       this.gameOverText.visible = true;
-      this.input.on('pointerup', function () {
-        this.scene.start('SceneC');
-      }, this);
+
+      if (!this._endBound) {
+        this._endBound = true;
+
+        // Make sure inputs work at game-over, but keep HUD visible until we transition
+        this.input.enabled = true;
+
+        // Bind to this scene's input so it rebinds correctly on each run
+        this.input.once('pointerup', () => {
+          // Now stop HUD and move to end scene
+          try { this.scene.stop('UIScene'); } catch (e) {}
+          this.scene.start('SceneC');
+        });
+      }
     }
 
     // Handle portal jump: delegate to PortalScene to animate and restart SceneB with a new variant
@@ -141,20 +159,21 @@ export class SceneB extends Phaser.Scene {
       }
 
       // Award an extra life on a successful portal
-      state.lives += 1;
+      state.lives += PORTAL_EXTRA_LIFE;
       this.game.events.emit('hud:lives', state.lives);
 
-      // Pause physics and launch PortalScene on top
+      // Disable input during transition, pause physics, and launch PortalScene on top
+      this.input.enabled = false;
       this.physics.pause();
       const nextVariant = (state.variantIndex || 0) + 1;
       this.scene.launch('PortalScene', { from: 'SceneB', to: 'SceneB', variantIndex: nextVariant });
     }
 
     if (state.cursors.left.isDown) {
-      state.player.setVelocityX(-160);
+      state.player.setVelocityX(-PLAYER_SPEED_X);
       state.player.anims.play('left', true);
     } else if (state.cursors.right.isDown) {
-      state.player.setVelocityX(160);
+      state.player.setVelocityX(PLAYER_SPEED_X);
       state.player.anims.play('right', true);
     } else {
       state.player.setVelocityX(0);
@@ -162,7 +181,7 @@ export class SceneB extends Phaser.Scene {
     }
 
     if (state.cursors.up.isDown && state.player.body.touching.down) {
-      state.player.setVelocityY(-330);
+      state.player.setVelocityY(PLAYER_JUMP_VELOCITY);
     }
   }
 }

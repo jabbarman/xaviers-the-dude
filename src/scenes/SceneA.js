@@ -1,4 +1,5 @@
 import { addTitle } from '../theme.js';
+import { state } from '../state.js';
 
 export class SceneA extends Phaser.Scene {
   constructor() {
@@ -12,6 +13,8 @@ export class SceneA extends Phaser.Scene {
     addTitle(this, 280, 300, 'THE DUDE');
 
     this.input.on('pointerup', function () {
+      // Start a fresh run: reset transient state
+      try { state.reset(); } catch(e) {}
       this.scene.start('SceneB');
     }, this);
   }

@@ -1,3 +1,7 @@
+/**
+ * Background helpers and mappings.
+ * Provides ordered background keys and utilities for variant-based selection and music mapping.
+ */
 // Centralized background ordering and future-proof music mapping for portal jumps
 // sky is the initial background (SceneA / first run). After each portal jump,
 // advance through the ordered list below and wrap around.
@@ -14,11 +18,10 @@ export const BACKGROUND_SEQUENCE = [
 
 // Helper: given a variantIndex (0-based count of portal jumps),
 // return the background key for SceneB.
-// variantIndex 0 -> first after sky -> BACKGROUND_SEQUENCE[0], etc.
+// variantIndex <= 0 -> 'sky'; variantIndex 1 -> BACKGROUND_SEQUENCE[0], etc.
 export function backgroundForVariant(variantIndex){
-  if (variantIndex == null || variantIndex < 0) return 'sky';
-  if (variantIndex === 0) return BACKGROUND_SEQUENCE[0] || 'sky';
-  const idx = variantIndex % BACKGROUND_SEQUENCE.length;
+  if (variantIndex == null || variantIndex <= 0) return 'sky';
+  const idx = (variantIndex - 1) % BACKGROUND_SEQUENCE.length;
   return BACKGROUND_SEQUENCE[idx];
 }
 

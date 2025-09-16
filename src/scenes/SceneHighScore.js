@@ -1,4 +1,5 @@
 import { state } from '../state.js';
+import { getJSON, setJSON } from '../persistence.js';
 
 export class SceneHighScore extends Phaser.Scene {
   constructor() {
@@ -8,12 +9,10 @@ export class SceneHighScore extends Phaser.Scene {
   loadHighScores() {
     let highScores = [];
     try {
-      const storedScores = localStorage.getItem('highScores');
-      if (storedScores) {
-        highScores = JSON.parse(storedScores);
-      }
+      // Use persistence helper for safety and corruption recovery
+      highScores = getJSON('highScores', []);
     } catch (e) {
-      console.error('Error loading high scores from localStorage:', e);
+      console.error('Error loading high scores:', e);
     }
 
     while (highScores.length < 5) {
@@ -26,16 +25,28 @@ export class SceneHighScore extends Phaser.Scene {
 
   saveHighScores(highScores) {
     try {
-      localStorage.setItem('highScores', JSON.stringify(highScores));
+      setJSON('highScores', highScores);
     } catch (e) {
-      console.error('Error saving high scores to localStorage:', e);
+      console.error('Error saving high scores:', e);
     }
   }
 
   create() {
     // Ensure overlays are hidden/removed on the final scene
     this.scene.stop('UIScene');
-    this.scene.stop('PostFXScene');
+
+    // Keys: use explicit addKeys and KeyCodes for clarity
+    const KeyCodes = Phaser.Input.Keyboard.KeyCodes;
+    this.keys = this.input.keyboard.addKeys({
+      left: KeyCodes.LEFT,
+      right: KeyCodes.RIGHT,
+      up: KeyCodes.UP,
+      down: KeyCodes.DOWN,
+      enter: KeyCodes.ENTER,
+      space: KeyCodes.SPACE,
+      esc: KeyCodes.ESC
+    });
+
     var chars = [
       ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'],
       ['K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T'],
@@ -63,7 +74,7 @@ export class SceneHighScore extends Phaser.Scene {
       displayHighScores = displayHighScores.slice(0, 5);
     }
 
-    var input = this.add.bitmapText(130, 50, 'arcade', 'ABCDEFGHIJ\n\nKLMNOPQRST\n\nUVWXYZ.-').setLetterSpacing(20);
+    var input = this.add.bitmapText(130, 35, 'arcade', 'ABCDEFGHIJ\n\nKLMNOPQRST\n\nUVWXYZ.-').setLetterSpacing(20);
     input.setInteractive();
 
     var rub = this.add.image(input.x + 430, input.y + 148, 'rub');
@@ -71,7 +82,15 @@ export class SceneHighScore extends Phaser.Scene {
 
     var block = this.add.image(input.x - 10, input.y - 2, 'block').setOrigin(0);
 
-    var legend = this.add.bitmapText(80, 260, 'arcade', 'RANK  SCORE   NAME').setTint(0xff00ff);
+    var legend = this.add.bitmapText(80, 235, 'arcade', 'RANK  SCORE   NAME').setTint(0xff00ff);
+
+    // Play Again affordance for clear navigation back to SceneA
+    const playAgain = this.add.bitmapText(70, 540, 'arcade', 'PLAY AGAIN  (ENTER)').setTint(0x00ff00);
+    playAgain.setInteractive();
+    playAgain.on('pointerup', () => {
+      state.reset();
+      this.scene.start('SceneA');
+    });
 
     var scoreTexts = [];
     var initialsTexts = [];
@@ -79,7 +98,7 @@ export class SceneHighScore extends Phaser.Scene {
     var ranks = ['1ST', '2ND', '3RD', '4TH', '5TH'];
 
     for (var i = 0; i < 5; i++) {
-      var yPos = 310 + (i * 50);
+      var yPos = 285 + (i * 50);
       var scoreText = this.add.bitmapText(80, yPos, 'arcade',
         ranks[i] + '   ' + displayHighScores[i].score.toString().padEnd(8)
       ).setTint(colors[i]);
@@ -97,32 +116,54 @@ export class SceneHighScore extends Phaser.Scene {
 
     var scene = this;
 
-    this.input.keyboard.on('keyup', function (event) {
-      if (event.keyCode === 37) {
-        if (cursor.x > 0) { cursor.x--; block.x -= 52; }
-      } else if (event.keyCode === 39) {
-        if (cursor.x < 9) { cursor.x++; block.x += 52; }
-      } else if (event.keyCode === 38) {
-        if (cursor.y > 0) { cursor.y--; block.y -= 64; }
-      } else if (event.keyCode === 40) {
-        if (cursor.y < 2) { cursor.y++; block.y += 64; }
-      } else if (event.keyCode === 13 || event.keyCode === 32) {
-        if (cursor.x === 9 && cursor.y === 2 && name.length > 0) {
-          if (newHighScore && scorePosition !== -1) {
-            var updatedHighScores = [...originalHighScores];
-            updatedHighScores.splice(scorePosition, 0, { score: state.score, initials: name });
-            updatedHighScores = updatedHighScores.slice(0, 5);
-            scene.saveHighScores(updatedHighScores);
-            state.score = 0;
-            scene.scene.restart();
+    this.input.keyboard.on('keyup', (event) => {
+      const kc = Phaser.Input.Keyboard.KeyCodes;
+      switch (event.keyCode) {
+        case kc.LEFT:
+          if (cursor.x > 0) { cursor.x--; block.x -= 52; }
+          break;
+        case kc.RIGHT:
+          if (cursor.x < 9) { cursor.x++; block.x += 52; }
+          break;
+        case kc.UP:
+          if (cursor.y > 0) { cursor.y--; block.y -= 64; }
+          break;
+        case kc.DOWN:
+          if (cursor.y < 2) { cursor.y++; block.y += 64; }
+          break;
+        case kc.ENTER:
+        case kc.SPACE:
+          if (!newHighScore) {
+            // Allow quick restart when there is no new high score to enter
+            state.reset();
+            scene.scene.start('SceneA');
+          } else if (cursor.x === 9 && cursor.y === 2 && name.length > 0) {
+            if (newHighScore && scorePosition !== -1) {
+              var updatedHighScores = [...originalHighScores];
+              updatedHighScores.splice(scorePosition, 0, { score: state.score, initials: name });
+              updatedHighScores = updatedHighScores.slice(0, 5);
+              scene.saveHighScores(updatedHighScores);
+              state.reset();
+              scene.scene.start('SceneA');
+            }
+          } else if (cursor.x === 8 && cursor.y === 2 && name.length > 0) {
+            name = name.substr(0, name.length - 1);
+            if (playerText) { playerText.text = name; }
+          } else if (name.length < 3) {
+            const ch = chars[cursor.y][cursor.x];
+            if (/^[A-Z]$/.test(ch)) {
+              name = name.concat(ch);
+              if (playerText) { playerText.text = name; }
+            }
           }
-        } else if (cursor.x === 8 && cursor.y === 2 && name.length > 0) {
-          name = name.substr(0, name.length - 1);
-          if (playerText) { playerText.text = name; }
-        } else if (name.length < 3) {
-          name = name.concat(chars[cursor.y][cursor.x]);
-          if (playerText) { playerText.text = name; }
-        }
+          break;
+        case kc.ESC:
+          // Cancel entry, go back to SceneA without saving
+          state.reset();
+          scene.scene.start('SceneA');
+          break;
+        default:
+          break;
       }
     });
 
@@ -152,12 +193,14 @@ export class SceneHighScore extends Phaser.Scene {
           updatedHighScores.splice(scorePosition, 0, { score: state.score, initials: name });
           updatedHighScores = updatedHighScores.slice(0, 5);
           scene.saveHighScores(updatedHighScores);
-          state.score = 0;
-          scene.scene.restart();
+          state.reset();
+          scene.scene.start('SceneA');
         }
       } else if (name.length < 3) {
-        name = name.concat(char);
-        if (playerText) { playerText.text = name; }
+        if (/^[A-Z]$/.test(char)) {
+          name = name.concat(char);
+          if (playerText) { playerText.text = name; }
+        }
       }
     }, this);
   }

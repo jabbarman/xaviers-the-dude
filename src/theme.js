@@ -1,3 +1,6 @@
+/**
+ * UI text helpers to keep styling consistent across scenes.
+ */
 export const UI = {
     titleSize: 32,
     bigSize: 24,
