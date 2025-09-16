@@ -150,8 +150,11 @@ export class SceneHighScore extends Phaser.Scene {
             name = name.substr(0, name.length - 1);
             if (playerText) { playerText.text = name; }
           } else if (name.length < 3) {
-            name = name.concat(chars[cursor.y][cursor.x]);
-            if (playerText) { playerText.text = name; }
+            const ch = chars[cursor.y][cursor.x];
+            if (/^[A-Z]$/.test(ch)) {
+              name = name.concat(ch);
+              if (playerText) { playerText.text = name; }
+            }
           }
           break;
         case kc.ESC:
@@ -194,8 +197,10 @@ export class SceneHighScore extends Phaser.Scene {
           scene.scene.start('SceneA');
         }
       } else if (name.length < 3) {
-        name = name.concat(char);
-        if (playerText) { playerText.text = name; }
+        if (/^[A-Z]$/.test(char)) {
+          name = name.concat(char);
+          if (playerText) { playerText.text = name; }
+        }
       }
     }, this);
   }
