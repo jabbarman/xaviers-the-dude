@@ -27,6 +27,21 @@ export function setString(key, value) {
 }
 
 /**
+ * Convenience: read a boolean flag stored as '1'/'0' (or 'true'/'false').
+ */
+export function getBool(key, defaultValue = false) {
+  const raw = getString(key, defaultValue ? '1' : '0');
+  return raw === '1' || raw === 'true' || raw === true;
+}
+
+/**
+ * Convenience: write a boolean flag as '1'/'0'.
+ */
+export function setBool(key, value) {
+  setString(key, value ? '1' : '0');
+}
+
+/**
  * Get a JSON-parsed value from localStorage; on parse errors, reset the key and return default.
  */
 export function getJSON(key, defaultValue) {

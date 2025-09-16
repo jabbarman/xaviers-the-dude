@@ -3,6 +3,7 @@ import { state } from '../state.js';
 import { collectStar, bounce, hitBomb } from '../logic.js';
 import { BACKGROUND_SEQUENCE } from '../backgrounds.js';
 import { AudioManager } from '../audio.js';
+import { setupFullscreen } from '../ui/fullscreen.js';
 
 export class SceneB extends Phaser.Scene {
   constructor() {
@@ -117,28 +118,15 @@ export class SceneB extends Phaser.Scene {
     this.physics.add.overlap(state.player, state.stars, collectStar.bind(this), null, this);
     this.physics.add.collider(state.player, state.bombs, hitBomb.bind(this), null, this);
 
-    // Fullscreen button
-    const button = this.add.image(WIDTH - 16, 16, 'fullscreen', 0).setOrigin(1, 0).setInteractive();
-    button.on('pointerup', function () {
-      if (this.scale.isFullscreen) {
-        button.setFrame(0);
-        this.scale.stopFullscreen();
-      } else {
-        button.setFrame(1);
-        this.scale.startFullscreen();
-      }
-    }, this);
+    // Fullscreen UI via helper
+    setupFullscreen(this);
 
-    const FKey = this.input.keyboard.addKey('F');
-    FKey.on('down', function () {
-      if (this.scale.isFullscreen) {
-        button.setFrame(0);
-        this.scale.stopFullscreen();
-      } else {
-        button.setFrame(1);
-        this.scale.startFullscreen();
-      }
-    }, this);
+    // Global mute toggle (M) with indicator via UIScene
+    const MKey = this.input.keyboard.addKey('M');
+    MKey.on('down', () => {
+      const muted = this.audio.toggleMute();
+      this.game.events.emit('hud:mute', muted);
+    });
   }
 
   update(time, delta) {

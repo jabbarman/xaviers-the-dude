@@ -60,7 +60,14 @@ import { getString, setString } from './persistence.js';
     const stored = getString('hiScore', String(state.hiScore));
     state.hiScore = parseInt(stored);
 
+    // Enable debug via query param ?debug=1
+    try {
+      const params = new URLSearchParams(location.search);
+      if (params.get('debug') === '1') state.debug = true;
+    } catch (e) {}
+
     if (state.debug) {
+      // Suggested debug defaults
       state.starsPerWave = 0;
       state.lives = 1;
       state.hiScore = 0;
