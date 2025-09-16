@@ -1,3 +1,7 @@
+/**
+ * Background helpers and mappings.
+ * Provides ordered background keys and utilities for variant-based selection and music mapping.
+ */
 // Centralized background ordering and future-proof music mapping for portal jumps
 // sky is the initial background (SceneA / first run). After each portal jump,
 // advance through the ordered list below and wrap around.

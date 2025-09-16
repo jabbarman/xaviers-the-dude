@@ -63,7 +63,7 @@ A logically ordered, actionable checklist to improve architecture, code quality,
     - Verify all asset keys referenced in scenes exist and are preloaded in Preloader (bounce sound is present; re-check any newly added keys when refactoring).
     - Keep src/game_context_configuration.js in sync when keys/scenes change.
 
-16. [ ] Reduce duplication in fullscreen handling
+16. [x] Reduce duplication in fullscreen handling
     - Extract fullscreen toggle logic into a helper (src/ui/fullscreen.js) and reuse in SceneB (button + F key).
 
 17. [ ] Improve scoreboard UX
@@ -81,17 +81,17 @@ A logically ordered, actionable checklist to improve architecture, code quality,
 20. [ ] Update credits and licensing notes for audio assets
     - Confirm all audio files used have proper attribution or licensing noted in README; ensure credits match actual keys in Preloader.
 
-21. [ ] Tooling hook alignment
+21. [x] Tooling hook alignment
     - Expose backgroundForVariant on game.config in main.js so automation tools (game_context_configuration) expectations match runtime.
     - When adding scenes or assets, update src/game_context_configuration.js accordingly.
 
-22. [ ] Error handling polish
+22. [x] Error handling polish
     - Wrap localStorage JSON.parse with fallbacks; recover from corrupted values by resetting to defaults and logging a warning.
 
-23. [ ] Defensive coding in physics callbacks
+23. [x] Defensive coding in physics callbacks
     - Guard against null/undefined (e.g., player may be destroyed when hitBomb triggers); early-return with checks in logic.js callbacks.
 
-24. [ ] Consistent naming and comments
+24. [x] Consistent naming and comments
     - Ensure scene file names and class names align (already consistent); add concise JSDoc atop public helpers (backgrounds.js, logic.js, theme.js).
 
 25. [ ] Prepare for future modularization
