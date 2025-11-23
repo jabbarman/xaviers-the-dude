@@ -37,9 +37,14 @@ export class SceneHighScore extends Phaser.Scene {
     this.scene.stop('UIScene');
     this._submissionInProgress = false;
     this._globalBoardLoaded = false;
-    this._globalStatusText = this.add.bitmapText(80, 250, 'arcade', '').setTint(0x00ffff);
-    this._globalStatusText.setScale(0.7);
-    this._globalStatusText.visible = false;
+
+    // Layout constants to reduce crowding and split into panels
+    const PANEL_SCALE = 0.8;
+    const leftX = 60;
+    const rightX = 430;
+    const headerY = 210;
+    const rowStartY = 260;
+    const rowSpacing = 42;
 
     // Keys: use explicit addKeys and KeyCodes for clarity
     const KeyCodes = Phaser.Input.Keyboard.KeyCodes;
@@ -90,41 +95,55 @@ export class SceneHighScore extends Phaser.Scene {
 
     var block = this.add.image(input.x - 10, input.y - 2, 'block').setOrigin(0);
 
-    var legend = this.add.bitmapText(80, 235, 'arcade', 'RANK  SCORE   NAME').setTint(0xff00ff);
+    // Panel headers
+    this.add.bitmapText(leftX, headerY - 25, 'arcade', 'LOCAL').setTint(0x00ffcc).setScale(PANEL_SCALE);
+    this.add.bitmapText(rightX, headerY - 25, 'arcade', 'GLOBAL').setTint(0x00ffcc).setScale(PANEL_SCALE);
+    this.add.bitmapText(leftX, headerY, 'arcade', 'RANK  SCORE   NAME').setTint(0xff00ff).setScale(PANEL_SCALE);
+    this.add.bitmapText(rightX, headerY, 'arcade', 'RANK  SCORE   NAME').setTint(0xff00ff).setScale(PANEL_SCALE);
+
+    // Global status sits under the global header
+    this._globalStatusText = this.add.bitmapText(rightX, headerY + 20, 'arcade', '').setTint(0x00ffff).setScale(0.6);
+    this._globalStatusText.visible = false;
 
     // Play Again affordance for clear navigation back to SceneA
-    const playAgain = this.add.bitmapText(70, 540, 'arcade', 'PLAY AGAIN  (ENTER)').setTint(0x00ff00);
+    const playAgain = this.add.bitmapText(70, 520, 'arcade', 'PLAY AGAIN  (ENTER)').setTint(0x00ff00);
+    playAgain.setScale(PANEL_SCALE);
     playAgain.setInteractive();
     playAgain.on('pointerup', () => {
       state.reset();
       this.scene.start('SceneA');
     });
 
-    var scoreTexts = [];
-    var initialsTexts = [];
     var colors = [0xff0000, 0xff8200, 0xffff00, 0x00ff00, 0x00bfff];
     var ranks = ['1ST', '2ND', '3RD', '4TH', '5TH'];
 
-    // Keep references for dynamic updates (global board or status changes)
-    this._scoreTexts = [];
-    this._initialsTexts = [];
+    // Keep references for dynamic updates (per board)
+    this._boards = {
+      local: { scoreTexts: [], initialsTexts: [] },
+      global: { scoreTexts: [], initialsTexts: [] }
+    };
 
+    // Seed both boards (local values and global placeholders)
     for (var i = 0; i < 5; i++) {
-      var yPos = 285 + (i * 50);
-      var scoreText = this.add.bitmapText(80, yPos, 'arcade',
+      var yPos = rowStartY + (i * rowSpacing);
+      var scoreTextLocal = this.add.bitmapText(leftX, yPos, 'arcade',
         ranks[i] + '   ' + displayHighScores[i].score.toString().padEnd(8)
-      ).setTint(colors[i]);
-      scoreTexts.push(scoreText);
-      this._scoreTexts.push(scoreText);
+      ).setTint(colors[i]).setScale(PANEL_SCALE);
+      var initialsTextLocal = this.add.bitmapText(leftX + 260, yPos, 'arcade', displayHighScores[i].initials).setTint(colors[i]).setScale(PANEL_SCALE);
+      this._boards.local.scoreTexts.push(scoreTextLocal);
+      this._boards.local.initialsTexts.push(initialsTextLocal);
 
-      var initialsText = this.add.bitmapText(560, yPos, 'arcade', displayHighScores[i].initials).setTint(colors[i]);
-      initialsTexts.push(initialsText);
-      this._initialsTexts.push(initialsText);
+      var scoreTextGlobal = this.add.bitmapText(rightX, yPos, 'arcade',
+        ranks[i] + '   ' + '---'.padEnd(8)
+      ).setTint(colors[i]).setScale(PANEL_SCALE);
+      var initialsTextGlobal = this.add.bitmapText(rightX + 260, yPos, 'arcade', '---').setTint(colors[i]).setScale(PANEL_SCALE);
+      this._boards.global.scoreTexts.push(scoreTextGlobal);
+      this._boards.global.initialsTexts.push(initialsTextGlobal);
     }
 
     var playerText = null;
     if (newHighScore && scorePosition !== -1) {
-      playerText = initialsTexts[scorePosition];
+      playerText = this._boards.local.initialsTexts[scorePosition];
       playerText.text = name;
     }
 
@@ -243,12 +262,14 @@ export class SceneHighScore extends Phaser.Scene {
     if (tint != null) this._globalStatusText.setTint(tint);
   }
 
-  updateBoard(entries, ranks, colors) {
+  updateBoard(entries, boardKey, ranks, colors) {
     if (!Array.isArray(entries) || entries.length === 0) return;
-    const rows = Math.min(entries.length, this._scoreTexts?.length || 0);
+    const board = this._boards?.[boardKey];
+    if (!board) return;
+    const rows = Math.min(entries.length, board.scoreTexts.length);
     for (let i = 0; i < rows; i++) {
-      const scoreText = this._scoreTexts[i];
-      const initialsText = this._initialsTexts[i];
+      const scoreText = board.scoreTexts[i];
+      const initialsText = board.initialsTexts[i];
       if (!scoreText || !initialsText) continue;
 
       const entry = entries[i];
@@ -276,7 +297,7 @@ export class SceneHighScore extends Phaser.Scene {
 
       // If no name entry is happening, switch board to global results.
       if (!newHighScore) {
-        this.updateBoard(entries.slice(0, 5), ranks, colors);
+        this.updateBoard(entries.slice(0, 5), 'global', ranks, colors);
       }
     } catch (e) {
       this.setGlobalStatus('Global board unavailable—showing local scores.', 0xffa500);
