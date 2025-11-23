@@ -37,7 +37,8 @@ export class SceneHighScore extends Phaser.Scene {
     this.scene.stop('UIScene');
     this._submissionInProgress = false;
     this._globalBoardLoaded = false;
-    this._globalStatusText = this.add.bitmapText(80, 510, 'arcade', '').setTint(0x00ffff);
+    this._globalStatusText = this.add.bitmapText(80, 250, 'arcade', '').setTint(0x00ffff);
+    this._globalStatusText.setScale(0.7);
     this._globalStatusText.visible = false;
 
     // Keys: use explicit addKeys and KeyCodes for clarity
