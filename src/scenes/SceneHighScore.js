@@ -39,12 +39,14 @@ export class SceneHighScore extends Phaser.Scene {
     this._globalBoardLoaded = false;
 
     // Layout constants to reduce crowding and split into panels
-    const PANEL_SCALE = 0.8;
-    const leftX = 60;
-    const rightX = 430;
-    const headerY = 210;
-    const rowStartY = 260;
-    const rowSpacing = 42;
+    const PANEL_SCALE = 0.75;
+    const ABC_SCALE = 0.8;
+    const PLAY_AGAIN_SCALE = 0.7;
+    const leftX = 40;
+    const rightX = 400;
+    const headerY = 190;
+    const rowStartY = 235;
+    const rowSpacing = 40;
 
     // Keys: use explicit addKeys and KeyCodes for clarity
     const KeyCodes = Phaser.Input.Keyboard.KeyCodes;
@@ -87,7 +89,9 @@ export class SceneHighScore extends Phaser.Scene {
       displayHighScores = displayHighScores.slice(0, 5);
     }
 
-    var input = this.add.bitmapText(130, 35, 'arcade', 'ABCDEFGHIJ\n\nKLMNOPQRST\n\nUVWXYZ.-').setLetterSpacing(20);
+    var input = this.add.bitmapText(120, 25, 'arcade', 'ABCDEFGHIJ\n\nKLMNOPQRST\n\nUVWXYZ.-')
+      .setLetterSpacing(18)
+      .setScale(ABC_SCALE);
     input.setInteractive();
 
     var rub = this.add.image(input.x + 430, input.y + 148, 'rub');
@@ -101,13 +105,13 @@ export class SceneHighScore extends Phaser.Scene {
     this.add.bitmapText(leftX, headerY, 'arcade', 'RANK  SCORE   NAME').setTint(0xff00ff).setScale(PANEL_SCALE);
     this.add.bitmapText(rightX, headerY, 'arcade', 'RANK  SCORE   NAME').setTint(0xff00ff).setScale(PANEL_SCALE);
 
-    // Global status sits under the global header
-    this._globalStatusText = this.add.bitmapText(rightX, headerY + 20, 'arcade', '').setTint(0x00ffff).setScale(0.6);
+    // Global fallback status sits under the global header (compact)
+    this._globalStatusText = this.add.bitmapText(rightX, headerY + 18, 'arcade', '').setTint(0xffa500).setScale(0.5);
     this._globalStatusText.visible = false;
 
     // Play Again affordance for clear navigation back to SceneA
     const playAgain = this.add.bitmapText(70, 520, 'arcade', 'PLAY AGAIN  (ENTER)').setTint(0x00ff00);
-    playAgain.setScale(PANEL_SCALE);
+    playAgain.setScale(PLAY_AGAIN_SCALE);
     playAgain.setInteractive();
     playAgain.on('pointerup', () => {
       state.reset();
@@ -129,14 +133,14 @@ export class SceneHighScore extends Phaser.Scene {
       var scoreTextLocal = this.add.bitmapText(leftX, yPos, 'arcade',
         ranks[i] + '   ' + displayHighScores[i].score.toString().padEnd(8)
       ).setTint(colors[i]).setScale(PANEL_SCALE);
-      var initialsTextLocal = this.add.bitmapText(leftX + 260, yPos, 'arcade', displayHighScores[i].initials).setTint(colors[i]).setScale(PANEL_SCALE);
+      var initialsTextLocal = this.add.bitmapText(leftX + 240, yPos, 'arcade', displayHighScores[i].initials).setTint(colors[i]).setScale(PANEL_SCALE);
       this._boards.local.scoreTexts.push(scoreTextLocal);
       this._boards.local.initialsTexts.push(initialsTextLocal);
 
       var scoreTextGlobal = this.add.bitmapText(rightX, yPos, 'arcade',
         ranks[i] + '   ' + '---'.padEnd(8)
       ).setTint(colors[i]).setScale(PANEL_SCALE);
-      var initialsTextGlobal = this.add.bitmapText(rightX + 260, yPos, 'arcade', '---').setTint(colors[i]).setScale(PANEL_SCALE);
+      var initialsTextGlobal = this.add.bitmapText(rightX + 240, yPos, 'arcade', '---').setTint(colors[i]).setScale(PANEL_SCALE);
       this._boards.global.scoreTexts.push(scoreTextGlobal);
       this._boards.global.initialsTexts.push(initialsTextGlobal);
     }
@@ -283,7 +287,7 @@ export class SceneHighScore extends Phaser.Scene {
   }
 
   async loadGlobalBoard(newHighScore, ranks, colors) {
-    this.setGlobalStatus('Loading global board...', 0x00ffff);
+    this.setGlobalStatus('Loading global board...', 0xffa500);
     try {
       const { entries } = await fetchGlobalHighScores();
       if (!entries || entries.length === 0) {
@@ -292,8 +296,7 @@ export class SceneHighScore extends Phaser.Scene {
       }
 
       this._globalBoardLoaded = true;
-      const summary = entries.slice(0, 3).map((e, idx) => `${idx + 1}:${e.initials} ${e.score}`).join('  ');
-      this.setGlobalStatus('Global board: ' + summary, 0x00ffff);
+      this.setGlobalStatus('', 0xffa500); // clear
 
       // If no name entry is happening, switch board to global results.
       if (!newHighScore) {
