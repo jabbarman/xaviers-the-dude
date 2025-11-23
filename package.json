@@ -5,7 +5,8 @@
   "type": "module",
   "main": "src/main.js",
   "scripts": {
-    "start": "http-server -o"
+    "start": "http-server -o",
+    "mock:highscores": "node scripts/mock-highscores.js"
   },
   "dependencies": {
     "phaser": "^3.90.0"
