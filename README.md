@@ -25,6 +25,12 @@ A JavaScript game based upon the popular Phaser graphics library. This game feat
 3. Start the game with `npm start`
 4. Open your browser to the URL shown in the terminal (usually http://localhost:8080)
 
+## Global High Scores
+
+- The high-score scene now attempts to fetch/submit a global leaderboard via `/api/highscores` (GET/POST).
+- Configure a different base with query params: `?hsBase=http://localhost:3000/api/highscores&hsTimeout=7000`.
+- If the service is unreachable, the game falls back to local scores and shows a notice; gameplay is unaffected.
+
 ## Recent Updates
 
 - Updated to latest Phaser version (3.90.0)

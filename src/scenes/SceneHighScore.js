@@ -1,5 +1,6 @@
 import { state } from '../state.js';
 import { getJSON, setJSON } from '../persistence.js';
+import { fetchGlobalHighScores, submitGlobalHighScore, sanitizeInitials, normalizeScore } from '../services/highscores.js';
 
 export class SceneHighScore extends Phaser.Scene {
   constructor() {
@@ -34,6 +35,10 @@ export class SceneHighScore extends Phaser.Scene {
   create() {
     // Ensure overlays are hidden/removed on the final scene
     this.scene.stop('UIScene');
+    this._submissionInProgress = false;
+    this._globalBoardLoaded = false;
+    this._globalStatusText = this.add.bitmapText(80, 510, 'arcade', '').setTint(0x00ffff);
+    this._globalStatusText.visible = false;
 
     // Keys: use explicit addKeys and KeyCodes for clarity
     const KeyCodes = Phaser.Input.Keyboard.KeyCodes;
@@ -54,6 +59,8 @@ export class SceneHighScore extends Phaser.Scene {
     ];
     var cursor = { x: 0, y: 0 };
     var name = '';
+    var sanitizedName = '';
+    var runScore = normalizeScore(state.score);
 
     var originalHighScores = this.loadHighScores();
 
@@ -61,7 +68,7 @@ export class SceneHighScore extends Phaser.Scene {
     var newHighScore = false;
 
     for (var i = 0; i < originalHighScores.length; i++) {
-      if (state.score > originalHighScores[i].score) {
+      if (runScore > originalHighScores[i].score) {
         scorePosition = i;
         newHighScore = true;
         break;
@@ -70,7 +77,7 @@ export class SceneHighScore extends Phaser.Scene {
 
     var displayHighScores = [...originalHighScores];
     if (newHighScore) {
-      displayHighScores.splice(scorePosition, 0, { score: state.score, initials: '???' });
+      displayHighScores.splice(scorePosition, 0, { score: runScore, initials: '???' });
       displayHighScores = displayHighScores.slice(0, 5);
     }
 
@@ -97,15 +104,21 @@ export class SceneHighScore extends Phaser.Scene {
     var colors = [0xff0000, 0xff8200, 0xffff00, 0x00ff00, 0x00bfff];
     var ranks = ['1ST', '2ND', '3RD', '4TH', '5TH'];
 
+    // Keep references for dynamic updates (global board or status changes)
+    this._scoreTexts = [];
+    this._initialsTexts = [];
+
     for (var i = 0; i < 5; i++) {
       var yPos = 285 + (i * 50);
       var scoreText = this.add.bitmapText(80, yPos, 'arcade',
         ranks[i] + '   ' + displayHighScores[i].score.toString().padEnd(8)
       ).setTint(colors[i]);
       scoreTexts.push(scoreText);
+      this._scoreTexts.push(scoreText);
 
       var initialsText = this.add.bitmapText(560, yPos, 'arcade', displayHighScores[i].initials).setTint(colors[i]);
       initialsTexts.push(initialsText);
+      this._initialsTexts.push(initialsText);
     }
 
     var playerText = null;
@@ -115,8 +128,32 @@ export class SceneHighScore extends Phaser.Scene {
     }
 
     var scene = this;
+    var finalizeAndRestart = async function () {
+      if (!newHighScore || scorePosition === -1 || name.length === 0 || scene._submissionInProgress) return;
+      scene._submissionInProgress = true;
+
+      // Persist locally first
+      var updatedHighScores = [...originalHighScores];
+      updatedHighScores.splice(scorePosition, 0, { score: runScore, initials: sanitizedName || name });
+      updatedHighScores = updatedHighScores.slice(0, 5);
+      scene.saveHighScores(updatedHighScores);
+
+      // Attempt global submission (best-effort)
+      scene.setGlobalStatus('Submitting to global board...', 0x00ffff);
+      try {
+        await submitGlobalHighScore({ initials: sanitizedName || name, score: runScore });
+        scene.setGlobalStatus('Submitted to global board!', 0x00ff00);
+      } catch (e) {
+        scene.setGlobalStatus('Could not submit to global board—local score saved.', 0xff0000);
+      }
+
+      state.reset();
+      scene.scene.start('SceneA');
+    };
 
     this.input.keyboard.on('keyup', (event) => {
+      if (scene._submissionInProgress) return;
+
       const kc = Phaser.Input.Keyboard.KeyCodes;
       switch (event.keyCode) {
         case kc.LEFT:
@@ -138,21 +175,16 @@ export class SceneHighScore extends Phaser.Scene {
             state.reset();
             scene.scene.start('SceneA');
           } else if (cursor.x === 9 && cursor.y === 2 && name.length > 0) {
-            if (newHighScore && scorePosition !== -1) {
-              var updatedHighScores = [...originalHighScores];
-              updatedHighScores.splice(scorePosition, 0, { score: state.score, initials: name });
-              updatedHighScores = updatedHighScores.slice(0, 5);
-              scene.saveHighScores(updatedHighScores);
-              state.reset();
-              scene.scene.start('SceneA');
-            }
+            finalizeAndRestart();
           } else if (cursor.x === 8 && cursor.y === 2 && name.length > 0) {
             name = name.substr(0, name.length - 1);
+            sanitizedName = sanitizeInitials(name);
             if (playerText) { playerText.text = name; }
           } else if (name.length < 3) {
             const ch = chars[cursor.y][cursor.x];
             if (/^[A-Z]$/.test(ch)) {
               name = name.concat(ch);
+              sanitizedName = sanitizeInitials(name);
               if (playerText) { playerText.text = name; }
             }
           }
@@ -186,22 +218,67 @@ export class SceneHighScore extends Phaser.Scene {
 
       if (char === '<' && name.length > 0) {
         name = name.substr(0, name.length - 1);
+        sanitizedName = sanitizeInitials(name);
         if (playerText) { playerText.text = name; }
       } else if (char === '>' && name.length > 0) {
-        if (newHighScore && scorePosition !== -1) {
-          var updatedHighScores = [...originalHighScores];
-          updatedHighScores.splice(scorePosition, 0, { score: state.score, initials: name });
-          updatedHighScores = updatedHighScores.slice(0, 5);
-          scene.saveHighScores(updatedHighScores);
-          state.reset();
-          scene.scene.start('SceneA');
-        }
+        finalizeAndRestart();
       } else if (name.length < 3) {
         if (/^[A-Z]$/.test(char)) {
           name = name.concat(char);
+          sanitizedName = sanitizeInitials(name);
           if (playerText) { playerText.text = name; }
         }
       }
     }, this);
+
+    // Kick off global leaderboard load (non-blocking)
+    this.loadGlobalBoard(newHighScore, ranks, colors);
+  }
+
+  setGlobalStatus(message, tint = 0x00ffff) {
+    if (!this._globalStatusText) return;
+    this._globalStatusText.visible = !!message;
+    this._globalStatusText.setText(message || '');
+    if (tint != null) this._globalStatusText.setTint(tint);
+  }
+
+  updateBoard(entries, ranks, colors) {
+    if (!Array.isArray(entries) || entries.length === 0) return;
+    const rows = Math.min(entries.length, this._scoreTexts?.length || 0);
+    for (let i = 0; i < rows; i++) {
+      const scoreText = this._scoreTexts[i];
+      const initialsText = this._initialsTexts[i];
+      if (!scoreText || !initialsText) continue;
+
+      const entry = entries[i];
+      scoreText.setText(ranks[i] + '   ' + entry.score.toString().padEnd(8));
+      initialsText.setText(entry.initials);
+      if (colors && colors[i] != null) {
+        scoreText.setTint(colors[i]);
+        initialsText.setTint(colors[i]);
+      }
+    }
+  }
+
+  async loadGlobalBoard(newHighScore, ranks, colors) {
+    this.setGlobalStatus('Loading global board...', 0x00ffff);
+    try {
+      const { entries } = await fetchGlobalHighScores();
+      if (!entries || entries.length === 0) {
+        this.setGlobalStatus('Global board unavailable—showing local scores.', 0xffa500);
+        return;
+      }
+
+      this._globalBoardLoaded = true;
+      const summary = entries.slice(0, 3).map((e, idx) => `${idx + 1}:${e.initials} ${e.score}`).join('  ');
+      this.setGlobalStatus('Global board: ' + summary, 0x00ffff);
+
+      // If no name entry is happening, switch board to global results.
+      if (!newHighScore) {
+        this.updateBoard(entries.slice(0, 5), ranks, colors);
+      }
+    } catch (e) {
+      this.setGlobalStatus('Global board unavailable—showing local scores.', 0xffa500);
+    }
   }
 }
