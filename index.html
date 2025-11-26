@@ -8,6 +8,10 @@
     <link rel="shortcut icon" href="./assets/star.png" type="image/png">
     <script src="./phaser.min.js"></script>
     <style type="text/css">
+        html, body {
+            width: 100%;
+            height: 100%;
+        }
         body {
             margin: 0;
             padding: 0;
@@ -15,11 +19,23 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+        }
+        /* Explicit parent for Phaser to size and center within */
+        #phaser-example {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        /* Keep the canvas centered inside the parent */
+        #phaser-example canvas {
+            display: block;
         }
     </style>
 </head>
 <body>
+<div id="phaser-example"></div>
 <script type="module" src="./src/main.js"></script>
 </body>
 </html>

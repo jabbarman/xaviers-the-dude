@@ -39,13 +39,14 @@ export class SceneHighScore extends Phaser.Scene {
     this._globalBoardLoaded = false;
 
     // Layout constants to reduce crowding and split into panels
-    const PANEL_SCALE = 0.75;
-    const ABC_SCALE = 0.8;
-    const PLAY_AGAIN_SCALE = 0.7;
+    const PANEL_SCALE = 0.60;
+    const ABC_SCALE = 1.0;
+    const PLAY_AGAIN_SCALE = 0.5;
     const leftX = 40;
     const rightX = 400;
-    const headerY = 190;
-    const rowStartY = 235;
+    const panelYOffset = 20; // space between ABC grid and panel headers
+    const headerY = 240 + panelYOffset;
+    const rowStartY = 285 + panelYOffset;
     const rowSpacing = 40;
 
     // Keys: use explicit addKeys and KeyCodes for clarity
@@ -90,8 +91,8 @@ export class SceneHighScore extends Phaser.Scene {
     }
 
     var input = this.add.bitmapText(120, 25, 'arcade', 'ABCDEFGHIJ\n\nKLMNOPQRST\n\nUVWXYZ.-')
-      .setLetterSpacing(18)
-      .setScale(ABC_SCALE);
+       .setLetterSpacing(20)
+       .setScale(ABC_SCALE);
     input.setInteractive();
 
     var rub = this.add.image(input.x + 430, input.y + 148, 'rub');
@@ -102,15 +103,18 @@ export class SceneHighScore extends Phaser.Scene {
     // Panel headers
     this.add.bitmapText(leftX, headerY - 25, 'arcade', 'LOCAL').setTint(0x00ffcc).setScale(PANEL_SCALE);
     this.add.bitmapText(rightX, headerY - 25, 'arcade', 'GLOBAL').setTint(0x00ffcc).setScale(PANEL_SCALE);
-    this.add.bitmapText(leftX, headerY, 'arcade', 'RANK  SCORE   NAME').setTint(0xff00ff).setScale(PANEL_SCALE);
-    this.add.bitmapText(rightX, headerY, 'arcade', 'RANK  SCORE   NAME').setTint(0xff00ff).setScale(PANEL_SCALE);
+    this.add.bitmapText(leftX, headerY, 'arcade', 'RANK  SCORE  NAME').setTint(0xff00ff).setScale(PANEL_SCALE);
+    this.add.bitmapText(rightX, headerY, 'arcade', 'RANK  SCORE  NAME').setTint(0xff00ff).setScale(PANEL_SCALE);
 
     // Global fallback status sits under the global header (compact)
-    this._globalStatusText = this.add.bitmapText(rightX, headerY + 18, 'arcade', '').setTint(0xffa500).setScale(0.5);
-    this._globalStatusText.visible = false;
+    // this._globalStatusText = this.add.bitmapText(rightX, headerY + 18, 'arcade', '').setTint(0xffa500).setScale(0.5);
+    // this._globalStatusText.visible = false;
 
     // Play Again affordance for clear navigation back to SceneA
-    const playAgain = this.add.bitmapText(70, 520, 'arcade', 'PLAY AGAIN  (ENTER)').setTint(0x00ff00);
+    const centerX = this.cameras.main.centerX;
+    const playAgain = this.add.bitmapText(centerX, 520, 'arcade', 'PLAY AGAIN  (ENTER)')
+      .setTint(0x00ff00)
+      .setOrigin(0.5, 0);
     playAgain.setScale(PLAY_AGAIN_SCALE);
     playAgain.setInteractive();
     playAgain.on('pointerup', () => {
@@ -291,7 +295,7 @@ export class SceneHighScore extends Phaser.Scene {
     try {
       const { entries } = await fetchGlobalHighScores();
       if (!entries || entries.length === 0) {
-        this.setGlobalStatus('Global board unavailable—showing local scores.', 0xffa500);
+        this.setGlobalStatus('Global board unavailable', 0xffa500);
         return;
       }
 
@@ -303,7 +307,7 @@ export class SceneHighScore extends Phaser.Scene {
         this.updateBoard(entries.slice(0, 5), 'global', ranks, colors);
       }
     } catch (e) {
-      this.setGlobalStatus('Global board unavailable—showing local scores.', 0xffa500);
+      this.setGlobalStatus('Global board unavailable', 0xffa500);
     }
   }
 }
