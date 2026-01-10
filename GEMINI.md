@@ -668,28 +668,28 @@ A logically ordered, actionable checklist to improve architecture, code quality,
     - [x] Update README with Known Footguns (from .junie/guidelines.md), testing harness usage, and the http-server port note.
     - [x] Add a section on enabling debug via a query param or state.debug toggle.
 
-13. [ ] Accessibility and UX improvements
-    - Add a global mute toggle (M key) with a small on-screen indicator; store preference in localStorage.
-    - Increase fullscreen button tap target and add a tooltip/hint; ensure safe-area margins on mobile.
+13. [x] Accessibility and UX improvements
+    - [x] Add a global mute toggle (M key) with a small on-screen indicator; store preference in localStorage.
+    - [x] Increase fullscreen button tap target, add a tooltip/hint; ensure safe-area margins on mobile.
 
-14. [ ] Performance and memory sanity checks
-    - Provide a simple FPS text toggle (D key when debug=true) for profiling; ensure it’s removed in production.
-    - Audit texture/sound unloading on scene shutdown to prevent leaks (destroy groups, remove timers/tweens where needed).
+14. [x] Performance and memory sanity checks
+    - [x] Provide a simple FPS text toggle (D key when debug=true) for profiling; ensure it’s removed in production.
+    - [x] Audit texture/sound unloading on scene shutdown to prevent leaks (destroy groups, remove timers/tweens where needed).
 
-15. [ ] Asset management consistency
-    - Verify all asset keys referenced in scenes exist and are preloaded in Preloader (bounce sound is present; re-check any newly added keys when refactoring).
-    - Keep src/game_context_configuration.js in sync when keys/scenes change.
+15. [x] Asset management consistency
+    - [x] Verify all asset keys referenced in scenes exist and are preloaded in Preloader (bounce sound is present; re-check any newly added keys when refactoring).
+    - [x] Keep src/game_context_configuration.js in sync when keys/scenes change.
 
 16. [x] Reduce duplication in fullscreen handling
     - Extract fullscreen toggle logic into a helper (src/ui/fullscreen.js) and reuse in SceneB (button + F key).
 
-17. [ ] Improve scoreboard UX
-    - In SceneHighScore, render a “Submit” and “Backspace” legend; allow ESC to cancel and return to SceneA.
-    - Clamp initials to A–Z consistently and visually highlight the selection.
+17. [x] Improve scoreboard UX
+    - [x] In SceneHighScore, render a “Submit” and “Backspace” legend; allow ESC to cancel and return to SceneA.
+    - [x] Clamp initials to A–Z consistently and visually highlight the selection.
 
-18. [ ] Add engine and browser compatibility metadata
-    - Add engines field to package.json ("node": ">=18").
-    - Document supported browsers and the requirement to serve over http(s), not file://.
+18. [x] Add engine and browser compatibility metadata
+    - [x] Add engines field to package.json ("node": ">=18").
+    - [x] Document supported browsers and the requirement to serve over http(s), not file://.
 
 19. [ ] Optional CI smoke checks
     - Add a lightweight Playwright script that launches http-server, opens test-highscore.html, and asserts highScores localStorage shape.
