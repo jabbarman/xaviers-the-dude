@@ -63,9 +63,16 @@ You can enable debug mode by adding `?debug=1` to the URL. This may enable extra
 
 ## Credits
 
-- Music by <a href="https://pixabay.com/users/djartmusic-46653586/?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=301272">Krzysztof Szymanski</a> from <a href="https://pixabay.com//?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=301272">Pixabay</a>
-- Music by <a href="https://pixabay.com/users/nocopyrightsound633-47610058/?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=322342">NoCopyrightSound633</a> from <a href="https://pixabay.com/music//?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=322342">Pixabay</a>
-- Music by <a href="https://pixabay.com/users/sounduniversestudio-43016639/?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=211547">SoundUniverseStudio</a> from <a href="https://pixabay.com/music//?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=211547">Pixabay</a>
-- Music by <a href="https://pixabay.com/users/kissan4-10387284/?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=358340">kissan4</a> from <a href="https://pixabay.com//?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=358340">Pixabay</a>
-- Music by <a href="https://pixabay.com/users/nickpanek-38266323/?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=218126">Nicholas Panek</a> from <a href="https://pixabay.com/music//?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=218126">Pixabay</a>
-- Music by <a href="https://pixabay.com/users/musicinmedia-43224764/?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=387749">Dvir</a> from <a href="https://pixabay.com//?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=387749">Pixabay</a>
+- Music by <a href="https://pixabay.com/users/djartmusic-46653586/?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=301272">Krzysztof Szymanski</a> from <a href="https://pixabay.com//?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=301272">Pixabay</a> (iLoveMy8bit)
+- Music by <a href="https://pixabay.com/users/nocopyrightsound633-47610058/?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=322342">NoCopyrightSound633</a> from <a href="https://pixabay.com/music//?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=322342">Pixabay</a> (8BitMusic)
+- Music by <a href="https://pixabay.com/users/sounduniversestudio-43016639/?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=211547">SoundUniverseStudio</a> from <a href="https://pixabay.com/music//?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=211547">Pixabay</a> (flat8bit)
+- Music by <a href="https://pixabay.com/users/kissan4-10387284/?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=358340">kissan4</a> from <a href="https://pixabay.com//?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=358340">Pixabay</a> (pixelParadise)
+- Music by <a href="https://pixabay.com/users/nickpanek-38266323/?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=218126">Nicholas Panek</a> from <a href="https://pixabay.com/music//?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=218126">Pixabay</a> (percussiveDubstep)
+- Music by <a href="https://pixabay.com/users/musicinmedia-43224764/?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=387749">Dvir</a> from <a href="https://pixabay.com//?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=387749">Pixabay</a> (8bitTheme)
+- Music 'bodenstaendig_2000_in_rock_4bit.mp3' (boden): [TODO: Add attribution]
+- Music 'tommy_in_goa.mp3' (tommy): [TODO: Add attribution]
+- Sound Effect 'player_death.wav' (gameOver): [TODO: Add attribution]
+- Sound Effect 'p-ping.mp3' (ping): [TODO: Add attribution]
+- Sound Effect 'explosion.mp3' (explode): [TODO: Add attribution]
+- Sound Effect 'mario-jumping-sound.mp3' (bounce): [TODO: Add attribution]
+- Sound Effect 'pickup.wav' (portalJump): [TODO: Add attribution]
