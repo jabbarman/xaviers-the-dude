@@ -9,7 +9,7 @@ const testScores = [
   { score: 4000, initials: 'BBB' },
   { score: 3000, initials: 'CCC' },
   { score: 2000, initials: 'DDD' },
-  { score: 1000, initials: 'EEE' }
+  { score: 1000, initials: 'EEE' },
 ];
 
 // Save test scores to localStorage
@@ -31,10 +31,10 @@ displayHighScores();
 // Test adding a new high score
 function testAddHighScore(score, initials) {
   console.log(`\nTesting adding score: ${score}, initials: ${initials}`);
-  
+
   // Get current high scores
   let highScores = JSON.parse(localStorage.getItem('highScores')) || [];
-  
+
   // Check if score qualifies
   let scorePosition = -1;
   for (let i = 0; i < highScores.length; i++) {
@@ -43,7 +43,7 @@ function testAddHighScore(score, initials) {
       break;
     }
   }
-  
+
   // If score qualifies, insert it
   if (scorePosition !== -1) {
     console.log(`Score qualifies at position ${scorePosition + 1}`);
@@ -53,7 +53,7 @@ function testAddHighScore(score, initials) {
   } else {
     console.log('Score does not qualify for high scores');
   }
-  
+
   // Display updated high scores
   displayHighScores();
 }
@@ -61,7 +61,7 @@ function testAddHighScore(score, initials) {
 // Test cases
 testAddHighScore(4500, 'NEW'); // Should be inserted at position 2
 testAddHighScore(6000, 'TOP'); // Should be inserted at position 1
-testAddHighScore(500, 'LOW');  // Should not qualify
+testAddHighScore(500, 'LOW'); // Should not qualify
 testAddHighScore(2500, 'MID'); // Should be inserted at position 4
 
 // Test default values
@@ -81,15 +81,15 @@ function loadHighScoresWithDefaults() {
   } catch (e) {
     console.error('Error loading high scores:', e);
   }
-  
+
   // Ensure we have 5 entries with defaults
   while (highScores.length < 5) {
     highScores.push({ score: 1000, initials: 'UNK' });
   }
-  
+
   // Sort by score
   highScores.sort((a, b) => b.score - a.score);
-  
+
   return highScores.slice(0, 5);
 }
 

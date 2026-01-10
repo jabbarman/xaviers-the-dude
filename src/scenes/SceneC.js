@@ -12,8 +12,12 @@ export class SceneC extends Phaser.Scene {
     addTitle(this, 180, 200, '  THE END');
     addBig(this, 180, 300, 'YOUR SCORE ' + state.score);
     addBig(this, 180, 360, 'HIGH SCORE ' + state.hiScore);
-    this.input.on('pointerup', function () {
-      this.scene.start('SceneHighScore');
-    }, this);
+    this.input.on(
+      'pointerup',
+      function () {
+        this.scene.start('SceneHighScore');
+      },
+      this,
+    );
   }
 }

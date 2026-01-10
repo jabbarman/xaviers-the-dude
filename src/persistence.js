@@ -51,7 +51,12 @@ export function getJSON(key, defaultValue) {
     try {
       return JSON.parse(raw);
     } catch (parseErr) {
-      console.warn('localStorage getJSON parse failed for', key, parseErr, '— resetting to default');
+      console.warn(
+        'localStorage getJSON parse failed for',
+        key,
+        parseErr,
+        '— resetting to default',
+      );
       // Attempt to self-heal corrupted values
       setJSON(key, defaultValue);
       return defaultValue;

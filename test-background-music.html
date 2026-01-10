@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Background Music Test</title>
+    <script src="./phaser.min.js"></script>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+        line-height: 1.6;
+      }
+      h1,
+      h2 {
+        color: #333;
+      }
+      button {
+        padding: 10px 15px;
+        margin: 5px;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+      button.stop {
+        background-color: #dc3545;
+      }
+      button.stop:hover {
+        background-color: #c82333;
+      }
+      button.mute-toggle {
+        background-color: #6c757d;
+      }
+      button.mute-toggle:hover {
+        background-color: #5a6268;
+      }
+
+      button:hover {
+        background-color: #0056b3;
+      }
+      .test-section {
+        margin-bottom: 20px;
+        padding: 15px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        background-color: #f9f9f9;
+      }
+      pre {
+        background-color: #e9e9e9;
+        padding: 10px;
+        border-radius: 4px;
+        overflow-x: auto;
+        white-space: pre-wrap;
+        word-break: break-all;
+      }
+      .result {
+        font-weight: bold;
+      }
+      #phaser-game {
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        position: absolute;
+        top: -100px;
+        left: -100px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Background Music Test Harness</h1>
+
+    <div class="test-section">
+      <h2>Global Audio Control</h2>
+      <button id="mute-toggle" class="mute-toggle">Toggle Mute (M)</button>
+      <button id="stop-all-music" class="stop">Stop All Music</button>
+      <p>Current Mute Status: <span id="mute-status" class="result"></span></p>
+      <p>
+        Currently Playing: <span id="playing-status" class="result">None</span>
+      </p>
+    </div>
+
+    <div class="test-section">
+      <h2>Play Background Music</h2>
+      <div id="music-buttons"></div>
+    </div>
+
+    <div id="phaser-game"></div>
+
+    <script type="module">
+      import {
+        BACKGROUND_SEQUENCE,
+        MUSIC_FOR_BACKGROUND,
+      } from './src/backgrounds.js';
+      import { AudioManager } from './src/audio.js';
+      import { getBool } from './src/persistence.js';
+
+      let audioManager = null;
+      let testScene = null;
+
+      class TestScene extends Phaser.Scene {
+        constructor() {
+          super('TestScene');
+        }
+
+        preload() {
+          console.log('TestScene: Preloading music assets...');
+          // Preload all music tracks defined in MUSIC_FOR_BACKGROUND
+          for (const key in MUSIC_FOR_BACKGROUND) {
+            const trackKey = MUSIC_FOR_BACKGROUND[key];
+            // Assuming all music files are MP3 in assets/audio/
+            this.load.audio(trackKey, `assets/audio/${trackKey}.mp3`);
+            console.log(`Preloaded: ${trackKey}`);
+          }
+        }
+
+        create() {
+          console.log('TestScene: Creating AudioManager...');
+          audioManager = new AudioManager(this);
+          testScene = this; // Expose scene to global scope for debugging if needed
+          updateMuteStatus(audioManager.scene.sound.mute); // Initial mute status
+          window.audioManager = audioManager; // For direct console access
+
+          // Generate music play buttons
+          const musicButtonsContainer =
+            document.getElementById('music-buttons');
+          const allBackgroundKeys = ['sky', ...BACKGROUND_SEQUENCE]; // Include 'sky'
+
+          allBackgroundKeys.forEach((bgKey) => {
+            const trackKey = MUSIC_FOR_BACKGROUND[bgKey];
+            const button = document.createElement('button');
+            button.textContent = `Play ${bgKey} (${trackKey})`;
+            button.addEventListener('click', () => {
+              audioManager.playForBackground(bgKey);
+              updatePlayingStatus(trackKey);
+            });
+            musicButtonsContainer.appendChild(button);
+          });
+
+          document
+            .getElementById('mute-toggle')
+            .addEventListener('click', () => {
+              const muted = audioManager.toggleMute();
+              updateMuteStatus(muted);
+            });
+
+          document
+            .getElementById('stop-all-music')
+            .addEventListener('click', () => {
+              audioManager.stop();
+              updatePlayingStatus('None');
+            });
+
+          // Keyboard 'M' for mute toggle
+          this.input.keyboard.on('keydown-M', () => {
+            const muted = audioManager.toggleMute();
+            updateMuteStatus(muted);
+          });
+        }
+      }
+
+      const config = {
+        type: Phaser.AUTO,
+        width: 1, // Minimal size for a headless game
+        height: 1,
+        parent: 'phaser-game', // Render into the hidden div
+        audio: {
+          disableWebAudio: false, // Enable Web Audio for music
+        },
+        scene: [TestScene],
+      };
+
+      const game = new Phaser.Game(config);
+
+      function updateMuteStatus(muted) {
+        document.getElementById('mute-status').textContent = muted
+          ? 'Muted'
+          : 'Unmuted';
+      }
+
+      function updatePlayingStatus(trackName) {
+        document.getElementById('playing-status').textContent = trackName;
+      }
+
+      // Initial check for mute status from persistence before Phaser loads
+      document.getElementById('mute-status').textContent = getBool(
+        'mute',
+        false,
+      )
+        ? 'Muted (from localStorage)'
+        : 'Unmuted';
+    </script>
+  </body>
+</html>

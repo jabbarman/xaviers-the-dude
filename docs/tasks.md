@@ -15,7 +15,7 @@ A logically ordered, actionable checklist to improve architecture, code quality,
    - Ensure tracks stop on scene shutdown/transition (SceneB shutdown, SceneC/SceneHighScore start). Guard against multiple overlapping sounds.
 
 4. [x] Clean up global event listeners to prevent leaks
-   - In UIScene, remove listeners on scene shutdown (this.events.once('shutdown', ...)) for hud:* and wave:start.
+   - In UIScene, remove listeners on scene shutdown (this.events.once('shutdown', ...)) for hud:\* and wave:start.
    - In SceneB, avoid re-adding input handlers inside update when gameOver; move pointerup registration to create() gated by a gameOver flag or use once('pointerup').
 
 5. [x] Normalize keyboard handling

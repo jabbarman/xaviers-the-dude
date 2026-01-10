@@ -19,4 +19,9 @@ export const EXTRA_BOMB_WAVE_BEFORE_PORTAL = 1; // waves before portal to spawn 
 export const PORTAL_WAVE_INTERVAL = 5;
 export const PORTAL_EXTRA_LIFE = 1;
 
-export const GAME_OVER_TEXT = { x: 400, y: 300, fontSize: '64px', fill: '#000' };
+export const GAME_OVER_TEXT = {
+  x: 400,
+  y: 300,
+  fontSize: '64px',
+  fill: '#000',
+};

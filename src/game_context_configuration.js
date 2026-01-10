@@ -56,7 +56,12 @@ const config = {
     transitions: [
       { from: 'SceneA', on: 'pointerup', to: 'SceneB' },
       { from: 'SceneB', on: 'gameOver', to: 'SceneC', optional: true },
-      { from: 'SceneB', on: 'portalJump', to: 'SceneB', note: 'increments variantIndex via PortalScene' },
+      {
+        from: 'SceneB',
+        on: 'portalJump',
+        to: 'SceneB',
+        note: 'increments variantIndex via PortalScene',
+      },
       { from: 'SceneB', overlay: ['UIScene'] },
       { from: 'SceneHighScore', overlayStop: ['UIScene'] },
     ],
@@ -95,7 +100,13 @@ const config = {
     },
     events: {
       // Emitted on the global game event bus to update HUD and wave info
-      emitters: ['hud:lives', 'hud:score', 'hud:hiscore', 'hud:wave', 'wave:start'],
+      emitters: [
+        'hud:lives',
+        'hud:score',
+        'hud:hiscore',
+        'hud:wave',
+        'wave:start',
+      ],
     },
   },
 
@@ -128,7 +139,11 @@ const config = {
       { key: 'block', context: 'SceneHighScore', optional: true },
     ],
     spritesheets: [
-      { key: 'dude', context: 'SceneB player', frames: { groups: ['left', 'turn', 'right'] } },
+      {
+        key: 'dude',
+        context: 'SceneB player',
+        frames: { groups: ['left', 'turn', 'right'] },
+      },
       { key: 'star', context: 'SceneB collectibles' },
     ],
     audio: [
@@ -137,9 +152,7 @@ const config = {
       { key: 'explode', context: 'SceneB' },
       { key: 'portalJump', context: 'SceneB' },
     ],
-    bitmapFonts: [
-      { key: 'arcade', context: 'SceneHighScore' },
-    ],
+    bitmapFonts: [{ key: 'arcade', context: 'SceneHighScore' }],
     // Mappings/hooks that tools might need to invoke
     dynamic: {
       // If backgrounds.js provides helper(s) these are their intended roles:

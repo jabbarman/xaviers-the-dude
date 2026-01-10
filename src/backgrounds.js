@@ -13,13 +13,13 @@ export const BACKGROUND_SEQUENCE = [
   'deepspace_comets',
   'intergalactic_galaxy',
   'earthlike_spaceships',
-  'alien_landscape'
+  'alien_landscape',
 ];
 
 // Helper: given a variantIndex (0-based count of portal jumps),
 // return the background key for SceneB.
 // variantIndex <= 0 -> 'sky'; variantIndex 1 -> BACKGROUND_SEQUENCE[0], etc.
-export function backgroundForVariant(variantIndex){
+export function backgroundForVariant(variantIndex) {
   if (variantIndex == null || variantIndex <= 0) return 'sky';
   const idx = (variantIndex - 1) % BACKGROUND_SEQUENCE.length;
   return BACKGROUND_SEQUENCE[idx];
@@ -35,9 +35,9 @@ export const MUSIC_FOR_BACKGROUND = {
   deepspace_comets: '8bitTheme',
   intergalactic_galaxy: 'pixelParadise',
   earthlike_spaceships: 'percussiveDubstep',
-  alien_landscape: 'tommy'
+  alien_landscape: 'tommy',
 };
 
-export function musicForBackground(bgKey){
+export function musicForBackground(bgKey) {
   return MUSIC_FOR_BACKGROUND[bgKey] || 'iLoveMy8bit';
 }
