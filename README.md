@@ -40,6 +40,27 @@ A JavaScript game based upon the popular Phaser graphics library. This game feat
 - Updated package dependencies
 - Improved HTML and CSS structure
 
+## Testing
+
+This project uses a series of simple HTML-based test harnesses. To run the tests, first start the http-server with `npm start`, then navigate to the respective `.html` file in your browser.
+
+- `http://localhost:8080/test-state-defaults.html` - Validates the initial state of the game and persistence of `hiScore`.
+- `http://localhost:8080/test-portal-variant.html` - Simulates portal jumps and verifies that the `variantIndex` and background change correctly.
+- `http://localhost:8080/test-background-music.html` - Checks that every background has a valid, preloaded music track associated with it.
+- `http://localhost:8080/test-highscore.html` - A harness for testing the high score submission and display logic.
+
+**Note:** If port `8080` is in use, `http-server` will automatically choose a different port. Check your terminal output for the correct URL.
+
+## Debugging
+
+You can enable debug mode by adding `?debug=1` to the URL. This may enable extra logging or other testing-related functionality.
+
+## Known Footguns
+
+- Do not import using bare specifiers (e.g., import Phaser from 'phaser') inside browser-targeted modules unless you bundle. Use window.Phaser via phaser.min.js or ensure your setup supports module resolution. This project uses installed phaser for development but serves phaser.min.js at root for direct browser usage.
+- Ensure cross-origin compatibility for audio; some browsers block autoplay. Consider user gesture before playing.
+- LocalStorage persistence can be polluted by tests. Clear keys (hiScore, highScores) before/after tests to avoid flaky behavior.
+
 ## Credits
 
 - Music by <a href="https://pixabay.com/users/djartmusic-46653586/?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=301272">Krzysztof Szymanski</a> from <a href="https://pixabay.com//?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=301272">Pixabay</a>

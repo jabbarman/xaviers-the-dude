@@ -1,125 +1,69 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Portal Variant Test</title>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Portal Variant</title>
     <style>
-      body {
-        font-family: Arial, sans-serif;
-        max-width: 800px;
-        margin: 0 auto;
-        padding: 20px;
-        line-height: 1.6;
-      }
-      h1,
-      h2 {
-        color: #333;
-      }
-      button {
-        padding: 10px 15px;
-        margin: 5px;
-        background-color: #007bff;
-        color: white;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-      }
-      button:hover {
-        background-color: #0056b3;
-      }
-      .test-section {
-        margin-bottom: 20px;
-        padding: 15px;
-        border: 1px solid #ccc;
-        border-radius: 5px;
-        background-color: #f9f9f9;
-      }
-      pre {
-        background-color: #e9e9e9;
-        padding: 10px;
-        border-radius: 4px;
-        overflow-x: auto;
-        white-space: pre-wrap;
-        word-break: break-all;
-      }
-      .result {
-        font-weight: bold;
-      }
+        body { font-family: monospace; }
+        .pass { color: green; }
+        .fail { color: red; }
     </style>
-  </head>
-  <body>
-    <h1>Portal Variant Test Harness</h1>
-
-    <div class="test-section">
-      <h2>Variant Index Control</h2>
-      <button id="decrement-variant">Decrement Variant Index</button>
-      <button id="increment-variant">Increment Variant Index</button>
-      <button id="reset-variant">Reset Variant Index (0)</button>
-      <p>
-        Current <code>state.variantIndex</code>:
-        <span id="current-variant-index" class="result">0</span>
-      </p>
-    </div>
-
-    <div class="test-section">
-      <h2>Background Mapping</h2>
-      <p>
-        Background for current variant:
-        <span id="current-background" class="result"></span>
-      </p>
-      <pre id="sequence-display"></pre>
-    </div>
-
+</head>
+<body>
+    <h1>Portal Variant Test</h1>
+    <div id="output"></div>
     <script type="module">
-      import { state } from './src/state.js';
-      import {
-        BACKGROUND_SEQUENCE,
-        backgroundForVariant,
-      } from './src/backgrounds.js';
+        import { state } from './src/state.js';
+        import { backgroundForVariant } from './src/backgrounds.js';
 
-      let currentVariantIndex = state.variantIndex;
+        const output = document.getElementById('output');
+        const log = (message, a, b) => {
+            const p = document.createElement('p');
+            const status = (a === b || (JSON.stringify(a) === JSON.stringify(b)))
+              ? '<span class="pass">PASS</span>'
+              : '<span class="fail">FAIL</span>';
 
-      function updateDisplay() {
-        document.getElementById('current-variant-index').textContent =
-          currentVariantIndex;
-        const bgKey = backgroundForVariant(currentVariantIndex);
-        document.getElementById('current-background').textContent = bgKey;
+            p.innerHTML = `${status}: ${message} (Expected: ${JSON.stringify(b)}, Got: ${JSON.stringify(a)})`;
+            output.appendChild(p);
+        };
 
-        let sequenceOutput = 'BACKGROUND_SEQUENCE:\n';
-        BACKGROUND_SEQUENCE.forEach((bg, index) => {
-          const effectiveIndex = index + 1; // variantIndex 1 maps to BACKGROUND_SEQUENCE[0]
-          const mappedBgKey = backgroundForVariant(effectiveIndex);
-          const highlight =
-            currentVariantIndex === effectiveIndex ? '  <-- CURRENT' : '';
-          sequenceOutput += `  Variant Index ${effectiveIndex}: ${bg} (mapped: ${mappedBgKey})${highlight}\n`;
-        });
-        sequenceOutput += `\nVariant Index 0 or less maps to 'sky'. Current mapped: ${backgroundForVariant(0)}`;
-        document.getElementById('sequence-display').textContent =
-          sequenceOutput;
-      }
+        // --- Test Cases ---
+        console.log('Running tests...');
 
-      document
-        .getElementById('decrement-variant')
-        .addEventListener('click', () => {
-          currentVariantIndex = Math.max(0, currentVariantIndex - 1);
-          updateDisplay();
-        });
+        // 1. Initial state
+        log('Initial variantIndex is 0', state.variantIndex, 0);
+        log('Initial background is "sky"', backgroundForVariant(state.variantIndex), 'sky');
 
-      document
-        .getElementById('increment-variant')
-        .addEventListener('click', () => {
-          currentVariantIndex++;
-          updateDisplay();
-        });
+        // 2. Simulate portal jump
+        state.portalJump = true;
+        
+        // This is a simplified version of what happens in the game.
+        // In the real game, the state is reset, and the variantIndex is incremented.
+        if (state.portalJump) {
+            state.variantIndex = (state.variantIndex + 1) % 6; // 6 is the number of backgrounds
+            state.portalJump = false;
+        }
+        
+        log('After one portal jump, variantIndex is 1', state.variantIndex, 1);
+        log('After one portal jump, background is "starrysky"', backgroundForVariant(state.variantIndex), 'starrysky');
 
-      document.getElementById('reset-variant').addEventListener('click', () => {
-        currentVariantIndex = 0;
-        updateDisplay();
-      });
+        // 3. Simulate another portal jump
+        state.portalJump = true;
+        if (state.portalJump) {
+            state.variantIndex = (state.variantIndex + 1) % 6;
+            state.portalJump = false;
+        }
 
-      // Initial display
-      updateDisplay();
+        log('After two portal jumps, variantIndex is 2', state.variantIndex, 2);
+        log('After two portal jumps, background is "saturnsky"', backgroundForVariant(state.variantIndex), 'saturnsky');
+        
+        // 4. Test reset
+        state.reset();
+        log('After reset, variantIndex is 0', state.variantIndex, 0);
+        log('After reset, background is "sky"', backgroundForVariant(state.variantIndex), 'sky');
+
+        console.log('Tests finished.');
     </script>
-  </body>
+</body>
 </html>

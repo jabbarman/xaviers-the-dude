@@ -655,18 +655,18 @@ A logically ordered, actionable checklist to improve architecture, code quality,
    - Create a small module src/persistence.js for localStorage get/set with try/catch and defaulting.
    - Use it in state.js (hiScore) and SceneHighScore (highScores) to avoid duplication and ensure JSON safety.
 
-10. [ ] Testing harness expansion
-    - Add test-state-defaults.html to validate state keys and hiScore load/save behavior (see guidelines 2.3); do not commit permanently unless kept valuable.
-    - Add test-portal-variant.html to simulate portalJump toggling and assert background key and variantIndex changes across restarts.
-    - Add test-background-music.html to verify musicForBackground provides valid preloaded keys for each background.
+10. [x] Testing harness expansion
+    - [x] Add test-state-defaults.html to validate state keys and hiScore load/save behavior (see guidelines 2.3); do not commit permanently unless kept valuable.
+    - [x] Add test-portal-variant.html to simulate portalJump toggling and assert background key and variantIndex changes across restarts.
+    - [x] Add test-background-music.html to verify musicForBackground provides valid preloaded keys for each background.
 
-11. [ ] Linting and formatting
-    - Introduce ESLint (ESM, browser, Phaser globals) and a simple npm script (npm run lint).
-    - Optionally add Prettier with sensible defaults; ensure it doesn’t break Phaser pipeline class strings.
+11. [x] Linting and formatting
+    - [x] Introduce ESLint (ESM, browser, Phaser globals) and a simple npm script (npm run lint).
+    - [x] Optionally add Prettier with sensible defaults; ensure it doesn’t break Phaser pipeline class strings.
 
-12. [ ] Document development workflow enhancements
-    - Update README with Known Footguns (from .junie/guidelines.md), testing harness usage, and the http-server port note.
-    - Add a section on enabling debug via a query param or state.debug toggle.
+12. [x] Document development workflow enhancements
+    - [x] Update README with Known Footguns (from .junie/guidelines.md), testing harness usage, and the http-server port note.
+    - [x] Add a section on enabling debug via a query param or state.debug toggle.
 
 13. [ ] Accessibility and UX improvements
     - Add a global mute toggle (M key) with a small on-screen indicator; store preference in localStorage.

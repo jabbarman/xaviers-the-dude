@@ -1,232 +1,77 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>State Defaults Test</title>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test State Defaults</title>
+    <script src="phaser.min.js"></script>
     <style>
-      body {
-        font-family: Arial, sans-serif;
-        max-width: 800px;
-        margin: 0 auto;
-        padding: 20px;
-        line-height: 1.6;
-      }
-      h1,
-      h2 {
-        color: #333;
-      }
-      button {
-        padding: 10px 15px;
-        margin: 5px;
-        background-color: #007bff;
-        color: white;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-      }
-      button:hover {
-        background-color: #0056b3;
-      }
-      .test-section {
-        margin-bottom: 20px;
-        padding: 15px;
-        border: 1px solid #ccc;
-        border-radius: 5px;
-        background-color: #f9f9f9;
-      }
-      pre {
-        background-color: #e9e9e9;
-        padding: 10px;
-        border-radius: 4px;
-        overflow-x: auto;
-        white-space: pre-wrap;
-        word-break: break-all;
-      }
-      .success {
-        color: green;
-      }
-      .error {
-        color: red;
-      }
-      .warning {
-        color: orange;
-      }
+        body { font-family: monospace; }
+        .pass { color: green; }
+        .fail { color: red; }
     </style>
-  </head>
-  <body>
-    <h1>State and Persistence Test Harness</h1>
-
-    <div class="test-section">
-      <h2>Global State (`state.js`)</h2>
-      <button id="display-state">Display Current State</button>
-      <button id="reset-state">Call state.reset()</button>
-      <button id="init-state">Initialize State (Simulate game start)</button>
-      <pre id="current-state"></pre>
-    </div>
-
-    <div class="test-section">
-      <h2>Persistence (`persistence.js`)</h2>
-      <button id="clear-localstorage">Clear localStorage</button>
-      <button id="set-valid-hiscore">Set Valid hiScore (LS)</button>
-      <button id="set-corrupt-hiscore">Set Corrupted hiScore (LS)</button>
-      <button id="set-valid-highscores">Set Valid highScores (LS)</button>
-      <button id="set-corrupt-highscores">Set Corrupted highScores (LS)</button>
-      <pre id="persistence-output"></pre>
-    </div>
-
+</head>
+<body>
+    <h1>State Defaults Test</h1>
+    <div id="output"></div>
     <script type="module">
-      import { state } from './src/state.js';
-      import {
-        getString,
-        setString,
-        getJSON,
-        setJSON,
-      } from './src/persistence.js';
+        import { state } from './src/state.js';
+        import { getString, setString } from './src/persistence.js';
 
-      // Function to display current state
-      function displayState() {
-        document.getElementById('current-state').textContent = JSON.stringify(
-          state,
-          (key, value) => {
-            // Filter out Phaser objects for cleaner display
-            if (
-              [
-                'player',
-                'stars',
-                'bombs',
-                'platforms',
-                'cursors',
-                'scoreText',
-                'hiScoreText',
-                'waveText',
-                'livesText',
-                'music',
-              ].includes(key)
-            ) {
-              return `[Phaser ${key} Object]`;
-            }
-            return value;
-          },
-          2,
-        );
-      }
+        const output = document.getElementById('output');
+        const log = (message, a, b) => {
+            const p = document.createElement('p');
+            const status = (a === b || (JSON.stringify(a) === JSON.stringify(b)))
+              ? '<span class="pass">PASS</span>'
+              : '<span class="fail">FAIL</span>';
 
-      // Simulate game initialization (calling the IIFE in state.js)
-      function initializeState() {
-        // Re-run the IIFE logic (simplified for harness)
-        try {
-          const stored = getString('hiScore', String(state.hiScore));
-          state.hiScore = parseInt(stored);
+            p.innerHTML = `${status}: ${message} (Expected: ${JSON.stringify(b)}, Got: ${JSON.stringify(a)})`;
+            output.appendChild(p);
+        };
 
-          const params = new URLSearchParams(location.search);
-          if (params.get('debug') === '1') {
-            state.debug = true;
-          } else {
-            state.debug = false; // Ensure debug is reset if param is removed
-          }
+        // --- Test Cases ---
+        console.log('Running tests...');
 
-          if (state.debug) {
-            state.starsPerWave = 0;
-            state.lives = 1;
-            state.hiScore = 0;
-            setString('hiScore', String(state.hiScore));
-          }
-        } catch (e) {
-          console.error('Error during state initialization:', e);
-        }
-        displayState();
-        logPersistenceOutput(
-          'State re-initialized based on localStorage and debug param.',
-        );
-      }
+        // 0. Cleanup before tests
+        localStorage.removeItem('hiScore');
+        // We need to reload the state module to make it re-initialize from the cleaned local storage
+        // A bit hacky but it's the simplest way for this test harness
+        const stateModule = await import('./src/state.js?t=' + new Date().getTime());
+        const freshState = stateModule.state;
 
-      function logPersistenceOutput(message, type = '') {
-        const outputElem = document.getElementById('persistence-output');
-        outputElem.className = type;
-        outputElem.textContent = message;
-      }
 
-      // Event Listeners
-      document
-        .getElementById('display-state')
-        .addEventListener('click', displayState);
-      document.getElementById('reset-state').addEventListener('click', () => {
-        state.reset();
-        displayState();
-        logPersistenceOutput(
-          'state.reset() called. Check state above. hiScore and highScores should be preserved.',
-        );
-      });
-      document.getElementById('init-state').addEventListener('click', () => {
-        // We need to re-import state.js for the IIFE to run again, or simulate its logic.
-        // For this test harness, we'll simulate the relevant initialization logic.
-        initializeState();
-      });
+        // 1. Test initial state is set correctly
+        log('Initial lives are 3', freshState.lives, 3);
+        log('Initial score is 0', freshState.score, 0);
+        log('Initial wave is 1', freshState.wave, 1);
+        log('Initial gameOver is false', freshState.gameOver, false);
+        log('Initial hiScore is 100 (default)', freshState.hiScore, 100);
 
-      document
-        .getElementById('clear-localstorage')
-        .addEventListener('click', () => {
-          localStorage.clear();
-          logPersistenceOutput(
-            "localStorage cleared. State's hiScore might revert to default on next init.",
-          );
-          displayState();
-        });
 
-      document
-        .getElementById('set-valid-hiscore')
-        .addEventListener('click', () => {
-          setString('hiScore', '9999');
-          logPersistenceOutput("Set hiScore in localStorage to '9999'.");
-          displayState();
-        });
+        // 2. Test hiScore persistence
+        setString('hiScore', '5000');
+        const stateModule2 = await import('./src/state.js?t=' + new Date().getTime());
+        const stateWithHiScore = stateModule2.state;
 
-      document
-        .getElementById('set-corrupt-hiscore')
-        .addEventListener('click', () => {
-          localStorage.setItem('hiScore', 'not a number');
-          logPersistenceOutput(
-            "Set hiScore in localStorage to 'not a number' (corrupted). Check console warnings.",
-          );
-          displayState(); // State will read this on next init
-        });
+        log('hiScore is loaded from localStorage', stateWithHiScore.hiScore, 5000);
 
-      document
-        .getElementById('set-valid-highscores')
-        .addEventListener('click', () => {
-          const scores = [
-            { initials: 'TST', score: 12345 },
-            { initials: 'DEV', score: 54321 },
-          ];
-          setJSON('highScores', scores);
-          logPersistenceOutput(
-            'Set highScores in localStorage to a valid JSON array.',
-          );
-          console.log("getJSON('highScores')", getJSON('highScores', []));
-          displayState();
-        });
+        // 3. Test reset behavior
+        stateWithHiScore.score = 500;
+        stateWithHiScore.lives = 1;
+        stateWithHiScore.wave = 5;
+        stateWithHiScore.gameOver = true;
+        stateWithHiScore.reset();
 
-      document
-        .getElementById('set-corrupt-highscores')
-        .addEventListener('click', () => {
-          localStorage.setItem('highScores', '{"initials": "corrupt"'); // Malformed JSON
-          logPersistenceOutput(
-            'Set highScores in localStorage to corrupted JSON. Check console warnings. getJSON should return default.',
-            'warning',
-          );
-          console.log(
-            'Attempting to read corrupted highScores:',
-            getJSON('highScores', []),
-          );
-          displayState();
-        });
+        log('After reset, lives are 3', stateWithHiScore.lives, 3);
+        log('After reset, score is 0', stateWithHiScore.score, 0);
+        log('After reset, wave is 1', stateWithHiScore.wave, 1);
+        log('After reset, gameOver is false', stateWithHiScore.gameOver, false);
+        log('After reset, hiScore is preserved', stateWithHiScore.hiScore, 5000);
 
-      // Initial display
-      displayState();
-      logPersistenceOutput(
-        'Harness loaded. Default state displayed. Check console for warnings on corrupted data tests.',
-      );
+
+        // --- Cleanup ---
+        localStorage.removeItem('hiScore');
+        console.log('Tests finished.');
     </script>
-  </body>
+</body>
 </html>
