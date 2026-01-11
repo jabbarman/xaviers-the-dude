@@ -19,7 +19,7 @@ export class SceneA extends Phaser.Scene {
         try {
           state.reset();
         } catch (e) { console.warn('Error during state reset in SceneA:', e); }
-        this.scene.start('SceneB');
+        this.scene.start('SceneB', { variantIndex: 0 });
       },
       this,
     );
