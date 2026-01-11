@@ -6,6 +6,7 @@ function queryParam(name) {
     const params = new URLSearchParams(location.search);
     return params.get(name);
   } catch (e) {
+    console.warn('Error reading URL search params:', e);
     return null;
   }
 }
@@ -18,5 +19,8 @@ const toNumber = (value, fallback) => {
 
 export const HIGHSCORE_API_BASE = queryParam('hsBase') || defaultBase;
 export const HIGHSCORE_LIMIT = toNumber(queryParam('hsLimit'), 20);
-export const HIGHSCORE_REQUEST_TIMEOUT_MS = toNumber(queryParam('hsTimeout'), 5000);
+export const HIGHSCORE_REQUEST_TIMEOUT_MS = toNumber(
+  queryParam('hsTimeout'),
+  5000,
+);
 export const HIGHSCORE_CACHE_MS = toNumber(queryParam('hsCacheMs'), 60000);

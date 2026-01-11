@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Portal Variant</title>
+    <style>
+        body { font-family: monospace; }
+        .pass { color: green; }
+        .fail { color: red; }
+    </style>
+</head>
+<body>
+    <h1>Portal Variant Test</h1>
+    <div id="output"></div>
+    <script type="module">
+        import { state } from './src/state.js';
+        import { backgroundForVariant } from './src/backgrounds.js';
+
+        const output = document.getElementById('output');
+        const log = (message, a, b) => {
+            const p = document.createElement('p');
+            const status = (a === b || (JSON.stringify(a) === JSON.stringify(b)))
+              ? '<span class="pass">PASS</span>'
+              : '<span class="fail">FAIL</span>';
+
+            p.innerHTML = `${status}: ${message} (Expected: ${JSON.stringify(b)}, Got: ${JSON.stringify(a)})`;
+            output.appendChild(p);
+        };
+
+        // --- Test Cases ---
+        console.log('Running tests...');
+
+        // 1. Initial state
+        log('Initial variantIndex is 0', state.variantIndex, 0);
+        log('Initial background is "sky"', backgroundForVariant(state.variantIndex), 'sky');
+
+        // 2. Simulate portal jump
+        state.portalJump = true;
+        
+        // This is a simplified version of what happens in the game.
+        // In the real game, the state is reset, and the variantIndex is incremented.
+        if (state.portalJump) {
+            state.variantIndex = (state.variantIndex + 1) % 6; // 6 is the number of backgrounds
+            state.portalJump = false;
+        }
+        
+        log('After one portal jump, variantIndex is 1', state.variantIndex, 1);
+        log('After one portal jump, background is "starrysky"', backgroundForVariant(state.variantIndex), 'starrysky');
+
+        // 3. Simulate another portal jump
+        state.portalJump = true;
+        if (state.portalJump) {
+            state.variantIndex = (state.variantIndex + 1) % 6;
+            state.portalJump = false;
+        }
+
+        log('After two portal jumps, variantIndex is 2', state.variantIndex, 2);
+        log('After two portal jumps, background is "saturnsky"', backgroundForVariant(state.variantIndex), 'saturnsky');
+        
+        // 4. Test reset
+        state.reset();
+        log('After reset, variantIndex is 0', state.variantIndex, 0);
+        log('After reset, background is "sky"', backgroundForVariant(state.variantIndex), 'sky');
+
+        console.log('Tests finished.');
+    </script>
+</body>
+</html>

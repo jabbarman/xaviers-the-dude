@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test State Defaults</title>
+    <script src="phaser.min.js"></script>
+    <style>
+        body { font-family: monospace; }
+        .pass { color: green; }
+        .fail { color: red; }
+    </style>
+</head>
+<body>
+    <h1>State Defaults Test</h1>
+    <div id="output"></div>
+    <script type="module">
+        import { state } from './src/state.js';
+        import { getString, setString } from './src/persistence.js';
+
+        const output = document.getElementById('output');
+        const log = (message, a, b) => {
+            const p = document.createElement('p');
+            const status = (a === b || (JSON.stringify(a) === JSON.stringify(b)))
+              ? '<span class="pass">PASS</span>'
+              : '<span class="fail">FAIL</span>';
+
+            p.innerHTML = `${status}: ${message} (Expected: ${JSON.stringify(b)}, Got: ${JSON.stringify(a)})`;
+            output.appendChild(p);
+        };
+
+        // --- Test Cases ---
+        console.log('Running tests...');
+
+        // 0. Cleanup before tests
+        localStorage.removeItem('hiScore');
+        // We need to reload the state module to make it re-initialize from the cleaned local storage
+        // A bit hacky but it's the simplest way for this test harness
+        const stateModule = await import('./src/state.js?t=' + new Date().getTime());
+        const freshState = stateModule.state;
+
+
+        // 1. Test initial state is set correctly
+        log('Initial lives are 3', freshState.lives, 3);
+        log('Initial score is 0', freshState.score, 0);
+        log('Initial wave is 1', freshState.wave, 1);
+        log('Initial gameOver is false', freshState.gameOver, false);
+        log('Initial hiScore is 100 (default)', freshState.hiScore, 100);
+
+
+        // 2. Test hiScore persistence
+        setString('hiScore', '5000');
+        const stateModule2 = await import('./src/state.js?t=' + new Date().getTime());
+        const stateWithHiScore = stateModule2.state;
+
+        log('hiScore is loaded from localStorage', stateWithHiScore.hiScore, 5000);
+
+        // 3. Test reset behavior
+        stateWithHiScore.score = 500;
+        stateWithHiScore.lives = 1;
+        stateWithHiScore.wave = 5;
+        stateWithHiScore.gameOver = true;
+        stateWithHiScore.reset();
+
+        log('After reset, lives are 3', stateWithHiScore.lives, 3);
+        log('After reset, score is 0', stateWithHiScore.score, 0);
+        log('After reset, wave is 1', stateWithHiScore.wave, 1);
+        log('After reset, gameOver is false', stateWithHiScore.gameOver, false);
+        log('After reset, hiScore is preserved', stateWithHiScore.hiScore, 5000);
+
+
+        // --- Cleanup ---
+        localStorage.removeItem('hiScore');
+        console.log('Tests finished.');
+    </script>
+</body>
+</html>

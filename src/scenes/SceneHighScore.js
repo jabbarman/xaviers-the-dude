@@ -1,6 +1,11 @@
 import { state } from '../state.js';
-import { getJSON, setJSON } from '../persistence.js';
-import { fetchGlobalHighScores, submitGlobalHighScore, sanitizeInitials, normalizeScore } from '../services/highscores.js';
+import { getJSON as _getJSON, setJSON as _setJSON } from '../persistence.js';
+import {
+  fetchGlobalHighScores,
+  submitGlobalHighScore,
+  sanitizeInitials,
+  normalizeScore,
+} from '../services/highscores.js';
 
 export class SceneHighScore extends Phaser.Scene {
   constructor() {
@@ -11,9 +16,9 @@ export class SceneHighScore extends Phaser.Scene {
     let highScores = [];
     try {
       // Use persistence helper for safety and corruption recovery
-      highScores = getJSON('highScores', []);
-    } catch (e) {
-      console.error('Error loading high scores:', e);
+      highScores = _getJSON('highScores', []);
+    } catch (_e) {
+      console.error('Error loading high scores:', _e);
     }
 
     while (highScores.length < 5) {
@@ -26,9 +31,9 @@ export class SceneHighScore extends Phaser.Scene {
 
   saveHighScores(highScores) {
     try {
-      setJSON('highScores', highScores);
-    } catch (e) {
-      console.error('Error saving high scores:', e);
+      _setJSON('highScores', highScores);
+    } catch (_e) {
+      console.error('Error saving high scores:', _e);
     }
   }
 
@@ -39,7 +44,7 @@ export class SceneHighScore extends Phaser.Scene {
     this._globalBoardLoaded = false;
 
     // Layout constants to reduce crowding and split into panels
-    const PANEL_SCALE = 0.60;
+    const PANEL_SCALE = 0.6;
     const ABC_SCALE = 1.0;
     const PLAY_AGAIN_SCALE = 0.5;
     const leftX = 40;
@@ -58,13 +63,13 @@ export class SceneHighScore extends Phaser.Scene {
       down: KeyCodes.DOWN,
       enter: KeyCodes.ENTER,
       space: KeyCodes.SPACE,
-      esc: KeyCodes.ESC
+      esc: KeyCodes.ESC,
     });
 
     var chars = [
       ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'],
       ['K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T'],
-      ['U', 'V', 'W', 'X', 'Y', 'Z', '.', '-', '<', '>']
+      ['U', 'V', 'W', 'X', 'Y', 'Z', '.', '-', '<', '>'],
     ];
     var cursor = { x: 0, y: 0 };
     var name = '';
@@ -76,7 +81,7 @@ export class SceneHighScore extends Phaser.Scene {
     var scorePosition = -1;
     var newHighScore = false;
 
-    for (var i = 0; i < originalHighScores.length; i++) {
+    for (let i = 0; i < originalHighScores.length; i++) {
       if (runScore > originalHighScores[i].score) {
         scorePosition = i;
         newHighScore = true;
@@ -86,25 +91,51 @@ export class SceneHighScore extends Phaser.Scene {
 
     var displayHighScores = [...originalHighScores];
     if (newHighScore) {
-      displayHighScores.splice(scorePosition, 0, { score: runScore, initials: '???' });
+      displayHighScores.splice(scorePosition, 0, {
+        score: runScore,
+        initials: '???',
+      });
       displayHighScores = displayHighScores.slice(0, 5);
     }
 
-    var input = this.add.bitmapText(120, 25, 'arcade', 'ABCDEFGHIJ\n\nKLMNOPQRST\n\nUVWXYZ.-')
-       .setLetterSpacing(20)
-       .setScale(ABC_SCALE);
+    var input = this.add
+      .bitmapText(120, 25, 'arcade', 'ABCDEFGHIJ\n\nKLMNOPQRST\n\nUVWXYZ.-')
+      .setLetterSpacing(20)
+      .setScale(ABC_SCALE);
     input.setInteractive();
 
-    var rub = this.add.image(input.x + 430, input.y + 148, 'rub');
-    var end = this.add.image(input.x + 482, input.y + 148, 'end');
+    var _rub = this.add.image(input.x + 430, input.y + 148, 'rub');
+    var _end = this.add.image(input.x + 482, input.y + 148, 'end');
+
+    // Add legends for rub and end
+    this.add
+      .bitmapText(_rub.x - 30, _rub.y + 30, 'arcade', 'BACKSPACE', 16)
+      .setTint(0xffffff)
+      .setOrigin(0.5);
+    this.add
+      .bitmapText(_end.x - 10, _end.y + 30, 'arcade', 'SUBMIT', 16)
+      .setTint(0xffffff)
+      .setOrigin(0.5);
 
     var block = this.add.image(input.x - 10, input.y - 2, 'block').setOrigin(0);
 
     // Panel headers
-    this.add.bitmapText(leftX, headerY - 25, 'arcade', 'LOCAL').setTint(0x00ffcc).setScale(PANEL_SCALE);
-    this.add.bitmapText(rightX, headerY - 25, 'arcade', 'GLOBAL').setTint(0x00ffcc).setScale(PANEL_SCALE);
-    this.add.bitmapText(leftX, headerY, 'arcade', 'RANK  SCORE  NAME').setTint(0xff00ff).setScale(PANEL_SCALE);
-    this.add.bitmapText(rightX, headerY, 'arcade', 'RANK  SCORE  NAME').setTint(0xff00ff).setScale(PANEL_SCALE);
+    this.add
+      .bitmapText(leftX, headerY - 25, 'arcade', 'LOCAL')
+      .setTint(0x00ffcc)
+      .setScale(PANEL_SCALE);
+    this.add
+      .bitmapText(rightX, headerY - 25, 'arcade', 'GLOBAL')
+      .setTint(0x00ffcc)
+      .setScale(PANEL_SCALE);
+    this.add
+      .bitmapText(leftX, headerY, 'arcade', 'RANK  SCORE  NAME')
+      .setTint(0xff00ff)
+      .setScale(PANEL_SCALE);
+    this.add
+      .bitmapText(rightX, headerY, 'arcade', 'RANK  SCORE  NAME')
+      .setTint(0xff00ff)
+      .setScale(PANEL_SCALE);
 
     // Global fallback status sits under the global header (compact)
     // this._globalStatusText = this.add.bitmapText(rightX, headerY + 18, 'arcade', '').setTint(0xffa500).setScale(0.5);
@@ -112,7 +143,8 @@ export class SceneHighScore extends Phaser.Scene {
 
     // Play Again affordance for clear navigation back to SceneA
     const centerX = this.cameras.main.centerX;
-    const playAgain = this.add.bitmapText(centerX, 520, 'arcade', 'PLAY AGAIN  (ENTER)')
+    const playAgain = this.add
+      .bitmapText(centerX, 520, 'arcade', 'PLAY AGAIN  (ENTER)')
       .setTint(0x00ff00)
       .setOrigin(0.5, 0);
     playAgain.setScale(PLAY_AGAIN_SCALE);
@@ -128,23 +160,36 @@ export class SceneHighScore extends Phaser.Scene {
     // Keep references for dynamic updates (per board)
     this._boards = {
       local: { scoreTexts: [], initialsTexts: [] },
-      global: { scoreTexts: [], initialsTexts: [] }
+      global: { scoreTexts: [], initialsTexts: [] },
     };
 
     // Seed both boards (local values and global placeholders)
-    for (var i = 0; i < 5; i++) {
-      var yPos = rowStartY + (i * rowSpacing);
-      var scoreTextLocal = this.add.bitmapText(leftX, yPos, 'arcade',
-        ranks[i] + '   ' + displayHighScores[i].score.toString().padEnd(8)
-      ).setTint(colors[i]).setScale(PANEL_SCALE);
-      var initialsTextLocal = this.add.bitmapText(leftX + 240, yPos, 'arcade', displayHighScores[i].initials).setTint(colors[i]).setScale(PANEL_SCALE);
+    for (let i = 0; i < 5; i++) {
+      var yPos = rowStartY + i * rowSpacing;
+      var scoreTextLocal = this.add
+        .bitmapText(
+          leftX,
+          yPos,
+          'arcade',
+          ranks[i] + '   ' + displayHighScores[i].score.toString().padEnd(8),
+        )
+        .setTint(colors[i])
+        .setScale(PANEL_SCALE);
+      var initialsTextLocal = this.add
+        .bitmapText(leftX + 240, yPos, 'arcade', displayHighScores[i].initials)
+        .setTint(colors[i])
+        .setScale(PANEL_SCALE);
       this._boards.local.scoreTexts.push(scoreTextLocal);
       this._boards.local.initialsTexts.push(initialsTextLocal);
 
-      var scoreTextGlobal = this.add.bitmapText(rightX, yPos, 'arcade',
-        ranks[i] + '   ' + '---'.padEnd(8)
-      ).setTint(colors[i]).setScale(PANEL_SCALE);
-      var initialsTextGlobal = this.add.bitmapText(rightX + 240, yPos, 'arcade', '---').setTint(colors[i]).setScale(PANEL_SCALE);
+      var scoreTextGlobal = this.add
+        .bitmapText(rightX, yPos, 'arcade', ranks[i] + '   ' + '---'.padEnd(8))
+        .setTint(colors[i])
+        .setScale(PANEL_SCALE);
+      var initialsTextGlobal = this.add
+        .bitmapText(rightX + 240, yPos, 'arcade', '---')
+        .setTint(colors[i])
+        .setScale(PANEL_SCALE);
       this._boards.global.scoreTexts.push(scoreTextGlobal);
       this._boards.global.initialsTexts.push(initialsTextGlobal);
     }
@@ -157,22 +202,37 @@ export class SceneHighScore extends Phaser.Scene {
 
     var scene = this;
     var finalizeAndRestart = async function () {
-      if (!newHighScore || scorePosition === -1 || name.length === 0 || scene._submissionInProgress) return;
+      if (
+        !newHighScore ||
+        scorePosition === -1 ||
+        name.length === 0 ||
+        scene._submissionInProgress
+      )
+        return;
       scene._submissionInProgress = true;
 
       // Persist locally first
       var updatedHighScores = [...originalHighScores];
-      updatedHighScores.splice(scorePosition, 0, { score: runScore, initials: sanitizedName || name });
+      updatedHighScores.splice(scorePosition, 0, {
+        score: runScore,
+        initials: sanitizedName || name,
+      });
       updatedHighScores = updatedHighScores.slice(0, 5);
       scene.saveHighScores(updatedHighScores);
 
       // Attempt global submission (best-effort)
       scene.setGlobalStatus('Submitting to global board...', 0x00ffff);
       try {
-        await submitGlobalHighScore({ initials: sanitizedName || name, score: runScore });
+        await submitGlobalHighScore({
+          initials: sanitizedName || name,
+          score: runScore,
+        });
         scene.setGlobalStatus('Submitted to global board!', 0x00ff00);
-      } catch (e) {
-        scene.setGlobalStatus('Could not submit to global board—local score saved.', 0xff0000);
+      } catch (_e) {
+        scene.setGlobalStatus(
+          'Could not submit to global board—local score saved.',
+          0xff0000,
+        );
       }
 
       state.reset();
@@ -185,16 +245,28 @@ export class SceneHighScore extends Phaser.Scene {
       const kc = Phaser.Input.Keyboard.KeyCodes;
       switch (event.keyCode) {
         case kc.LEFT:
-          if (cursor.x > 0) { cursor.x--; block.x -= 52; }
+          if (cursor.x > 0) {
+            cursor.x--;
+            block.x -= 52;
+          }
           break;
         case kc.RIGHT:
-          if (cursor.x < 9) { cursor.x++; block.x += 52; }
+          if (cursor.x < 9) {
+            cursor.x++;
+            block.x += 52;
+          }
           break;
         case kc.UP:
-          if (cursor.y > 0) { cursor.y--; block.y -= 64; }
+          if (cursor.y > 0) {
+            cursor.y--;
+            block.y -= 64;
+          }
           break;
         case kc.DOWN:
-          if (cursor.y < 2) { cursor.y++; block.y += 64; }
+          if (cursor.y < 2) {
+            cursor.y++;
+            block.y += 64;
+          }
           break;
         case kc.ENTER:
         case kc.SPACE:
@@ -207,13 +279,17 @@ export class SceneHighScore extends Phaser.Scene {
           } else if (cursor.x === 8 && cursor.y === 2 && name.length > 0) {
             name = name.substr(0, name.length - 1);
             sanitizedName = sanitizeInitials(name);
-            if (playerText) { playerText.text = name; }
+            if (playerText) {
+              playerText.text = name;
+            }
           } else if (name.length < 3) {
-            const ch = chars[cursor.y][cursor.x];
-            if (/^[A-Z]$/.test(ch)) {
-              name = name.concat(ch);
+            const char = chars[cursor.y][cursor.x];
+            if (/^[A-Z]$/.test(char)) {
+              name = name.concat(char);
               sanitizedName = sanitizeInitials(name);
-              if (playerText) { playerText.text = name; }
+              if (playerText) {
+                playerText.text = name;
+              }
             }
           }
           break;
@@ -227,37 +303,51 @@ export class SceneHighScore extends Phaser.Scene {
       }
     });
 
-    input.on('pointermove', function (pointer, x, y) {
-      var cx = Phaser.Math.Snap.Floor(x, 52, 0, true);
-      var cy = Phaser.Math.Snap.Floor(y, 64, 0, true);
-      var char = chars[cy][cx];
-      cursor.x = cx; cursor.y = cy;
-      block.x = input.x - 10 + (cx * 52);
-      block.y = input.y - 2 + (cy * 64);
-    }, this);
+    input.on(
+      'pointermove',
+      function (pointer, x, y) {
+        var cx = Phaser.Math.Snap.Floor(x, 52, 0, true);
+        var cy = Phaser.Math.Snap.Floor(y, 64, 0, true);
+        var _char = chars[cy][cx]; // Renamed to _char as it's not used after assignment
+        cursor.x = cx;
+        cursor.y = cy;
+        block.x = input.x - 10 + cx * 52;
+        block.y = input.y - 2 + cy * 64;
+      },
+      this,
+    );
 
-    input.on('pointerup', function (pointer, x, y) {
-      var cx = Phaser.Math.Snap.Floor(x, 52, 0, true);
-      var cy = Phaser.Math.Snap.Floor(y, 64, 0, true);
-      var char = chars[cy][cx];
-      cursor.x = cx; cursor.y = cy;
-      block.x = input.x - 10 + (cx * 52);
-      block.y = input.y - 2 + (cy * 64);
+    input.on(
+      'pointerup',
+      function (pointer, x, y) {
+        var cx = Phaser.Math.Snap.Floor(x, 52, 0, true);
+        var cy = Phaser.Math.Snap.Floor(y, 64, 0, true);
+        var _char = chars[cy][cx]; // Renamed to _char
+        cursor.x = cx;
+        cursor.y = cy;
+        block.x = input.x - 10 + cx * 52;
+        block.y = input.y - 2 + cy * 64;
 
-      if (char === '<' && name.length > 0) {
-        name = name.substr(0, name.length - 1);
-        sanitizedName = sanitizeInitials(name);
-        if (playerText) { playerText.text = name; }
-      } else if (char === '>' && name.length > 0) {
-        finalizeAndRestart();
-      } else if (name.length < 3) {
-        if (/^[A-Z]$/.test(char)) {
-          name = name.concat(char);
+        if (_char === '<' && name.length > 0) {
+          name = name.substr(0, name.length - 1);
           sanitizedName = sanitizeInitials(name);
-          if (playerText) { playerText.text = name; }
+          if (playerText) {
+            playerText.text = name;
+          }
+        } else if (_char === '>' && name.length > 0) {
+          finalizeAndRestart();
+        } else if (name.length < 3) {
+          if (/^[A-Z]$/.test(_char)) {
+            name = name.concat(_char);
+            sanitizedName = sanitizeInitials(name);
+            if (playerText) {
+              playerText.text = name;
+            }
+          }
         }
-      }
-    }, this);
+      },
+      this,
+    );
 
     // Kick off global leaderboard load (non-blocking)
     this.loadGlobalBoard(newHighScore, ranks, colors);
@@ -306,7 +396,7 @@ export class SceneHighScore extends Phaser.Scene {
       if (!newHighScore) {
         this.updateBoard(entries.slice(0, 5), 'global', ranks, colors);
       }
-    } catch (e) {
+    } catch (_e) {
       this.setGlobalStatus('Global board unavailable', 0xffa500);
     }
   }

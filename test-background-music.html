@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Background Music</title>
+    <style>
+        body { font-family: monospace; }
+        .pass { color: green; }
+        .fail { color: red; }
+    </style>
+</head>
+<body>
+    <h1>Background Music Test</h1>
+    <div id="output"></div>
+    <script type="module">
+        import { BACKGROUND_SEQUENCE, musicForBackground, MUSIC_FOR_BACKGROUND } from './src/backgrounds.js';
+
+        const output = document.getElementById('output');
+        const log = (message, condition) => {
+            const p = document.createElement('p');
+            const status = condition ? '<span class="pass">PASS</span>' : '<span class="fail">FAIL</span>';
+            p.innerHTML = `${status}: ${message}`;
+            output.appendChild(p);
+        };
+
+        // --- Test Cases ---
+        console.log('Running tests...');
+
+        // 1. Test the default background
+        const defaultBg = 'sky';
+        const defaultMusic = musicForBackground(defaultBg);
+        log(`Music for default background "${defaultBg}" should be a non-empty string`, defaultMusic && typeof defaultMusic === 'string');
+        log(`Music for default background "${defaultBg}" should be in MUSIC_FOR_BACKGROUND`, defaultMusic in MUSIC_FOR_BACKGROUND);
+
+
+        // 2. Test all backgrounds in the sequence
+        BACKGROUND_SEQUENCE.forEach(bgKey => {
+            const musicKey = musicForBackground(bgKey);
+            log(`Music for background "${bgKey}" should be a non-empty string`, musicKey && typeof musicKey === 'string');
+            log(`Music for background "${bgKey}" should be in MUSIC_FOR_BACKGROUND`, musicKey in MUSIC_FOR_BACKGROUND);
+        });
+
+        // 3. Test fallback for unknown background
+        const unknownBg = 'non_existent_background';
+        const fallbackMusic = musicForBackground(unknownBg);
+        log(`Music for unknown background should return the default fallback`, fallbackMusic === 'iLoveMy8bit');
+
+
+        console.log('Tests finished.');
+    </script>
+</body>
+</html>

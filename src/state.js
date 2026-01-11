@@ -47,9 +47,11 @@ export const state = {
     this.waveText = null;
     this.livesText = null;
     // Stop and clear music handle if still active
-    try { this.music?.stop?.(); } catch(e) {}
+    try {
+      this.music?.stop?.();
+    } catch (e) { console.warn('Error stopping music in state.reset():', e); }
     this.music = null;
-  }
+  },
 };
 
 import { getString, setString } from './persistence.js';
@@ -64,7 +66,7 @@ import { getString, setString } from './persistence.js';
     try {
       const params = new URLSearchParams(location.search);
       if (params.get('debug') === '1') state.debug = true;
-    } catch (e) {}
+    } catch (e) { console.warn('Error parsing URL search params for debug:', e); }
 
     if (state.debug) {
       // Suggested debug defaults
@@ -75,5 +77,6 @@ import { getString, setString } from './persistence.js';
     }
   } catch (e) {
     // If localStorage isn't available, keep default
+    console.warn('Error during state initialization from localStorage:', e);
   }
 })();

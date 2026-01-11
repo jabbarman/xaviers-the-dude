@@ -4,14 +4,23 @@
   "description": "A JavaScript game based upon the popular Phaser graphics Library",
   "type": "module",
   "main": "src/main.js",
+  "engines": {
+    "node": ">=18"
+  },
   "scripts": {
     "start": "http-server -o",
-    "mock:highscores": "node scripts/mock-highscores.js"
+    "mock:highscores": "node scripts/mock-highscores.js",
+    "lint": "eslint .",
+    "format": "prettier --write ."
   },
   "dependencies": {
     "phaser": "^3.90.0"
   },
   "devDependencies": {
-    "http-server": "^14.1.1"
+    "@eslint/js": "^9.39.2",
+    "eslint": "^9.39.2",
+    "globals": "^17.0.0",
+    "http-server": "^14.1.1",
+    "prettier": "^3.7.4"
   }
 }

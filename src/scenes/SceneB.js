@@ -1,4 +1,14 @@
-import { WIDTH, HEIGHT, PLAYER_SPEED_X, PLAYER_JUMP_VELOCITY, PLAYER_BOUNCE, STARS_BOUNCE_MIN, STARS_BOUNCE_MAX, PORTAL_EXTRA_LIFE, GAME_OVER_TEXT } from '../config.js';
+import {
+  WIDTH,
+  HEIGHT,
+  PLAYER_SPEED_X,
+  PLAYER_JUMP_VELOCITY,
+  PLAYER_BOUNCE,
+  STARS_BOUNCE_MIN,
+  STARS_BOUNCE_MAX,
+  PORTAL_EXTRA_LIFE,
+  GAME_OVER_TEXT,
+} from '../config.js';
 import { state } from '../state.js';
 import { collectStar, bounce, hitBomb } from '../logic.js';
 import { BACKGROUND_SEQUENCE } from '../backgrounds.js';
@@ -24,10 +34,10 @@ export class SceneB extends Phaser.Scene {
 
     // Launch overlay scenes
     this.scene.launch('UIScene');
-    this.game.events.emit('hud:lives',  state.lives);
-    this.game.events.emit('hud:score',  state.score);
-    this.game.events.emit('hud:hiscore',state.hiScore);
-    this.game.events.emit('hud:wave',   state.wave);
+    this.game.events.emit('hud:lives', state.lives);
+    this.game.events.emit('hud:score', state.score);
+    this.game.events.emit('hud:hiscore', state.hiScore);
+    this.game.events.emit('hud:wave', state.wave);
     this.game.events.emit('wave:start', state.wave);
 
     // Centralized music per background via AudioManager
@@ -35,7 +45,12 @@ export class SceneB extends Phaser.Scene {
     // Determine background key from variant consistently
     const bgKey = this.sys.game.config.backgroundForVariant
       ? this.sys.game.config.backgroundForVariant(state.variantIndex)
-      : (state.variantIndex === 0 ? 'sky' : BACKGROUND_SEQUENCE[(state.variantIndex - 1 + BACKGROUND_SEQUENCE.length) % BACKGROUND_SEQUENCE.length]);
+      : state.variantIndex === 0
+        ? 'sky'
+        : BACKGROUND_SEQUENCE[
+            (state.variantIndex - 1 + BACKGROUND_SEQUENCE.length) %
+              BACKGROUND_SEQUENCE.length
+          ];
     this.audio.playForBackground(bgKey);
     // Preload/ensure SFX are ready
     this.sound.add('gameOver');
@@ -44,15 +59,22 @@ export class SceneB extends Phaser.Scene {
     this.sound.add('portalJump');
 
     // Ensure track stops on scene shutdown/transition
-    this.events.once('shutdown', () => { try { this.audio.stop(); } catch(e){} });
+    this.events.once('shutdown', () => {
+      try {
+        this.audio.stop();
+      } catch (e) { console.warn('Error stopping audio on SceneB shutdown:', e); }
+    });
 
     // Background varies with variant: draw selected background
     this.add.image(WIDTH / 2, HEIGHT / 2, bgKey);
 
     // Choose platform texture based on background
-    const groundKey = (bgKey === 'alien_landscape')
-      ? 'ground_alien'
-      : (bgKey !== 'sky' ? 'ground_space' : 'ground');
+    const groundKey =
+      bgKey === 'alien_landscape'
+        ? 'ground_alien'
+        : bgKey !== 'sky'
+          ? 'ground_space'
+          : 'ground';
 
     // Platforms vary slightly with variant to create a "SceneD" flavor
     state.platforms = this.physics.add.staticGroup();
@@ -74,18 +96,38 @@ export class SceneB extends Phaser.Scene {
     state.player.setCollideWorldBounds(true);
 
     // Animations
-    this.anims.create({ key: 'left', frames: this.anims.generateFrameNumbers('dude', { start: 0, end: 3 }), frameRate: 10, repeat: -1 });
-    this.anims.create({ key: 'turn', frames: [{ key: 'dude', frame: 4 }], frameRate: 20 });
-    this.anims.create({ key: 'right', frames: this.anims.generateFrameNumbers('dude', { start: 5, end: 8 }), frameRate: 10, repeat: -1 });
+    this.anims.create({
+      key: 'left',
+      frames: this.anims.generateFrameNumbers('dude', { start: 0, end: 3 }),
+      frameRate: 10,
+      repeat: -1,
+    });
+    this.anims.create({
+      key: 'turn',
+      frames: [{ key: 'dude', frame: 4 }],
+      frameRate: 20,
+    });
+    this.anims.create({
+      key: 'right',
+      frames: this.anims.generateFrameNumbers('dude', { start: 5, end: 8 }),
+      frameRate: 10,
+      repeat: -1,
+    });
 
     // Input
     state.cursors = this.input.keyboard.createCursorKeys();
 
     // Stars
     const stepX = Math.floor(WIDTH / (state.starsPerWave + 1));
-    state.stars = this.physics.add.group({ key: 'star', repeat: state.starsPerWave, setXY: { x: 12, y: 0, stepX } });
+    state.stars = this.physics.add.group({
+      key: 'star',
+      repeat: state.starsPerWave,
+      setXY: { x: 12, y: 0, stepX },
+    });
     state.stars.children.iterate(function (child) {
-      child.setBounceY(Phaser.Math.FloatBetween(STARS_BOUNCE_MIN, STARS_BOUNCE_MAX));
+      child.setBounceY(
+        Phaser.Math.FloatBetween(STARS_BOUNCE_MIN, STARS_BOUNCE_MAX),
+      );
     });
 
     // Bombs
@@ -97,14 +139,25 @@ export class SceneB extends Phaser.Scene {
         state.stars?.clear(true, true);
         state.bombs?.clear(true, true);
         state.platforms?.clear(true, true);
-      } catch(e) {}
-      try { this.tweens.killAll(); } catch(e) {}
-      try { this.time?.removeAllEvents(); } catch(e) {}
-      try { this.input?.removeAllListeners(); } catch(e) {}
+      } catch (e) { console.warn('Error clearing physics groups on SceneB shutdown:', e); }
+      try {
+        this.tweens.killAll();
+      } catch (e) { console.warn('Error killing tweens on SceneB shutdown:', e); }
+      try {
+        this.time?.removeAllEvents();
+      } catch (e) { console.warn('Error removing all time events on SceneB shutdown:', e); }
+      try {
+        this.input?.removeAllListeners();
+      } catch (e) { console.warn('Error removing all input listeners on SceneB shutdown:', e); }
     });
 
     // Game over text (scene property, not in state to avoid leakage across runs)
-    this.gameOverText = this.add.text(GAME_OVER_TEXT.x, GAME_OVER_TEXT.y, 'Game Over', { fontSize: GAME_OVER_TEXT.fontSize, fill: GAME_OVER_TEXT.fill });
+    this.gameOverText = this.add.text(
+      GAME_OVER_TEXT.x,
+      GAME_OVER_TEXT.y,
+      'Game Over',
+      { fontSize: GAME_OVER_TEXT.fontSize, fill: GAME_OVER_TEXT.fill },
+    );
     this.gameOverText.setOrigin(0.5);
     this.gameOverText.setDepth(1000);
     this.gameOverText.visible = false;
@@ -112,11 +165,29 @@ export class SceneB extends Phaser.Scene {
     // Colliders
     this.physics.add.collider(state.player, state.platforms);
     this.physics.add.collider(state.stars, state.platforms);
-    this.physics.add.collider(state.bombs, state.platforms, bounce.bind(this), null, this);
+    this.physics.add.collider(
+      state.bombs,
+      state.platforms,
+      bounce.bind(this),
+      null,
+      this,
+    );
 
     // Overlaps
-    this.physics.add.overlap(state.player, state.stars, collectStar.bind(this), null, this);
-    this.physics.add.collider(state.player, state.bombs, hitBomb.bind(this), null, this);
+    this.physics.add.overlap(
+      state.player,
+      state.stars,
+      collectStar.bind(this),
+      null,
+      this,
+    );
+    this.physics.add.collider(
+      state.player,
+      state.bombs,
+      hitBomb.bind(this),
+      null,
+      this,
+    );
 
     // Fullscreen UI via helper
     setupFullscreen(this);
@@ -129,9 +200,11 @@ export class SceneB extends Phaser.Scene {
     });
   }
 
-  update(time, delta) {
+  update(_time, _delta) {
     if (state.gameOver) {
-      try { this.audio?.stop(); } catch(e){}
+      try {
+        this.audio?.stop();
+      } catch (e) { console.warn('Error stopping audio on game over:', e); }
       this.gameOverText.visible = true;
 
       if (!this._endBound) {
@@ -143,7 +216,9 @@ export class SceneB extends Phaser.Scene {
         // Bind to this scene's input so it rebinds correctly on each run
         this.input.once('pointerup', () => {
           // Now stop HUD and move to end scene
-          try { this.scene.stop('UIScene'); } catch (e) {}
+          try {
+            this.scene.stop('UIScene');
+          } catch (e) { console.warn('Error stopping UIScene:', e); }
           this.scene.start('SceneC');
         });
       }
@@ -155,7 +230,9 @@ export class SceneB extends Phaser.Scene {
 
       // Clear bombs to avoid stray collisions during transition
       if (state.bombs?.countActive(true) > 0) {
-        state.bombs.children.iterate(function (child) { child.disableBody(true, true); });
+        state.bombs.children.iterate(function (child) {
+          child.disableBody(true, true);
+        });
       }
 
       // Award an extra life on a successful portal
@@ -166,7 +243,11 @@ export class SceneB extends Phaser.Scene {
       this.input.enabled = false;
       this.physics.pause();
       const nextVariant = (state.variantIndex || 0) + 1;
-      this.scene.launch('PortalScene', { from: 'SceneB', to: 'SceneB', variantIndex: nextVariant });
+      this.scene.launch('PortalScene', {
+        from: 'SceneB',
+        to: 'SceneB',
+        variantIndex: nextVariant,
+      });
     }
 
     if (state.cursors.left.isDown) {

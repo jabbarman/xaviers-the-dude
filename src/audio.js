@@ -11,13 +11,15 @@ export class AudioManager {
     // Apply persisted mute preference
     try {
       this.scene.sound.mute = getBool('mute', false);
-    } catch (e) {}
+    } catch (e) { console.warn('Error applying persisted mute preference:', e); }
   }
 
   playForBackground(backgroundKey) {
     const trackKey = musicForBackground(backgroundKey);
     // Stop any currently playing track to avoid overlaps
-    try { this.current?.stop?.(); } catch (e) {}
+    try {
+      this.current?.stop?.();
+    } catch (e) { console.warn('Error stopping AudioManager current track:', e); }
     this.current = this.scene.sound.add(trackKey);
     this.current.play();
     return this.current;
@@ -26,8 +28,8 @@ export class AudioManager {
   setMuted(muted) {
     try {
       this.scene.sound.mute = !!muted;
-      setBool('mute', !!muted);
-    } catch (e) {}
+      setBool('mute', !!muted); // Ensure setBool is used here
+    } catch (e) { console.warn('Error setting mute status:', e); }
   }
 
   toggleMute() {
@@ -37,7 +39,9 @@ export class AudioManager {
   }
 
   stop() {
-    try { this.current?.stop?.(); } catch (e) {}
+    try {
+      this.current?.stop?.();
+    } catch (e) { console.warn('Error stopping current music track:', e); }
     this.current = null;
   }
 }

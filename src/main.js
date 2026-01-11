@@ -18,7 +18,7 @@ const config = {
     parent: 'phaser-example',
     autoCenter: Phaser.Scale.CENTER_BOTH,
     width: WIDTH,
-    height: HEIGHT
+    height: HEIGHT,
   },
   pixelArt: true,
   render: { pixelArt: true, roundPixels: true },
@@ -26,14 +26,22 @@ const config = {
     default: 'arcade',
     arcade: {
       gravity: { y: 300 },
-      debug: false
-    }
+      debug: false,
+    },
   },
-  scene: [Preloader, SceneA, SceneB, SceneC, SceneHighScore, UIScene, PortalScene],
+  scene: [
+    Preloader,
+    SceneA,
+    SceneB,
+    SceneC,
+    SceneHighScore,
+    UIScene,
+    PortalScene,
+  ],
 };
 
 // Attach tooling hook for background variants
 config.backgroundForVariant = backgroundForVariant;
 
-// eslint-disable-next-line no-new
+ 
 new Phaser.Game(config);

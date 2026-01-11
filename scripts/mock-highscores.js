@@ -7,13 +7,30 @@ import { parse } from 'url';
 
 const DEFAULT_PORT = process.env.PORT || process.argv[2] || 3000;
 let scores = [
-  { initials: 'ABC', score: 12000, createdAt: new Date(Date.now() - 600000).toISOString() },
-  { initials: 'DEF', score: 9000, createdAt: new Date(Date.now() - 1200000).toISOString() },
-  { initials: 'GHI', score: 6000, createdAt: new Date(Date.now() - 1800000).toISOString() },
+  {
+    initials: 'ABC',
+    score: 12000,
+    createdAt: new Date(Date.now() - 600000).toISOString(),
+  },
+  {
+    initials: 'DEF',
+    score: 9000,
+    createdAt: new Date(Date.now() - 1200000).toISOString(),
+  },
+  {
+    initials: 'GHI',
+    score: 6000,
+    createdAt: new Date(Date.now() - 1800000).toISOString(),
+  },
 ];
 
 function sanitizeInitials(initials) {
-  return (initials || '').toUpperCase().replace(/[^A-Z]/g, '').slice(0, 3) || 'UNK';
+  return (
+    (initials || '')
+      .toUpperCase()
+      .replace(/[^A-Z]/g, '')
+      .slice(0, 3) || 'UNK'
+  );
 }
 
 function normalizeScore(score) {
@@ -26,7 +43,7 @@ function sendJson(res, status, payload) {
   const body = JSON.stringify(payload);
   res.writeHead(status, {
     'Content-Type': 'application/json',
-    'Access-Control-Allow-Origin': '*'
+    'Access-Control-Allow-Origin': '*',
   });
   res.end(body);
 }
@@ -34,11 +51,13 @@ function sendJson(res, status, payload) {
 function parseBody(req) {
   return new Promise((resolve) => {
     let data = '';
-    req.on('data', (chunk) => { data += chunk; });
+    req.on('data', (chunk) => {
+      data += chunk;
+    });
     req.on('end', () => {
       try {
         resolve(JSON.parse(data || '{}'));
-      } catch (e) {
+      } catch (/* eslint-disable-line no-unused-vars */ _e) {
         resolve({});
       }
     });
@@ -51,7 +70,7 @@ const server = http.createServer(async (req, res) => {
     res.writeHead(204, {
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type'
+      'Access-Control-Allow-Headers': 'Content-Type',
     });
     res.end();
     return;
@@ -75,9 +94,7 @@ const server = http.createServer(async (req, res) => {
     }
     const entry = { initials, score, createdAt: new Date().toISOString() };
     scores.push(entry);
-    scores = scores
-      .sort((a, b) => b.score - a.score)
-      .slice(0, 100);
+    scores = scores.sort((a, b) => b.score - a.score).slice(0, 100);
     return sendJson(res, 201, entry);
   }
 
@@ -85,5 +102,7 @@ const server = http.createServer(async (req, res) => {
 });
 
 server.listen(DEFAULT_PORT, () => {
-  console.log(`Mock high-score server listening on http://localhost:${DEFAULT_PORT}`);
+  console.log(
+    `Mock high-score server listening on http://localhost:${DEFAULT_PORT}`,
+  );
 });

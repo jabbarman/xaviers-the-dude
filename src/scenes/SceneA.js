@@ -12,10 +12,16 @@ export class SceneA extends Phaser.Scene {
     addTitle(this, 280, 250, ' XAVIER');
     addTitle(this, 280, 300, 'THE DUDE');
 
-    this.input.on('pointerup', function () {
-      // Start a fresh run: reset transient state
-      try { state.reset(); } catch(e) {}
-      this.scene.start('SceneB');
-    }, this);
+    this.input.on(
+      'pointerup',
+      function () {
+        // Start a fresh run: reset transient state
+        try {
+          state.reset();
+        } catch (e) { console.warn('Error during state reset in SceneA:', e); }
+        this.scene.start('SceneB', { variantIndex: 0 });
+      },
+      this,
+    );
   }
 }

@@ -1,201 +1,215 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>High Score Test</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        h1 {
-            color: #333;
-        }
-        button {
-            padding: 10px 15px;
-            margin: 5px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #45a049;
-        }
-        pre {
-            background-color: #f5f5f5;
-            padding: 10px;
-            border-radius: 4px;
-            overflow-x: auto;
-        }
-        .test-section {
-            margin-bottom: 20px;
-            padding: 15px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-        }
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+      h1 {
+        color: #333;
+      }
+      button {
+        padding: 10px 15px;
+        margin: 5px;
+        background-color: #4caf50;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+      button:hover {
+        background-color: #45a049;
+      }
+      pre {
+        background-color: #f5f5f5;
+        padding: 10px;
+        border-radius: 4px;
+        overflow-x: auto;
+      }
+      .test-section {
+        margin-bottom: 20px;
+        padding: 15px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <h1>High Score Functionality Test</h1>
-    
+
     <div class="test-section">
-        <h2>Current High Scores</h2>
-        <pre id="current-scores">Loading...</pre>
-        <button id="refresh-scores">Refresh Scores</button>
-        <button id="clear-scores">Clear All Scores</button>
+      <h2>Current High Scores</h2>
+      <pre id="current-scores">Loading...</pre>
+      <button id="refresh-scores">Refresh Scores</button>
+      <button id="clear-scores">Clear All Scores</button>
     </div>
-    
+
     <div class="test-section">
-        <h2>Test Adding New Score</h2>
-        <div>
-            <label for="score-input">Score:</label>
-            <input type="number" id="score-input" value="3500">
-            
-            <label for="initials-input">Initials:</label>
-            <input type="text" id="initials-input" value="TST" maxlength="3">
-            
-            <button id="add-score">Add Score</button>
-        </div>
-        <pre id="add-result"></pre>
+      <h2>Test Adding New Score</h2>
+      <div>
+        <label for="score-input">Score:</label>
+        <input type="number" id="score-input" value="3500" />
+
+        <label for="initials-input">Initials:</label>
+        <input type="text" id="initials-input" value="TST" maxlength="3" />
+
+        <button id="add-score">Add Score</button>
+      </div>
+      <pre id="add-result"></pre>
     </div>
-    
+
     <div class="test-section">
-        <h2>Test Default Values</h2>
-        <button id="test-defaults">Test Default Values</button>
-        <pre id="defaults-result"></pre>
+      <h2>Test Default Values</h2>
+      <button id="test-defaults">Test Default Values</button>
+      <pre id="defaults-result"></pre>
     </div>
-    
+
     <div class="test-section">
-        <h2>Test Preset Scores</h2>
-        <button id="load-preset">Load Preset Scores</button>
-        <pre id="preset-result"></pre>
+      <h2>Test Preset Scores</h2>
+      <button id="load-preset">Load Preset Scores</button>
+      <pre id="preset-result"></pre>
     </div>
-    
+
     <script>
-        // Function to display current high scores
-        function displayHighScores() {
-            const highScores = JSON.parse(localStorage.getItem('highScores')) || [];
-            let output = 'Current High Scores:\n';
-            
-            if (highScores.length === 0) {
-                output += 'No high scores found.';
-            } else {
-                highScores.forEach((entry, index) => {
-                    output += `${index + 1}. ${entry.score} - ${entry.initials}\n`;
-                });
-            }
-            
-            document.getElementById('current-scores').textContent = output;
+      // Function to display current high scores
+      function displayHighScores() {
+        const highScores = JSON.parse(localStorage.getItem('highScores')) || [];
+        let output = 'Current High Scores:\n';
+
+        if (highScores.length === 0) {
+          output += 'No high scores found.';
+        } else {
+          highScores.forEach((entry, index) => {
+            output += `${index + 1}. ${entry.score} - ${entry.initials}\n`;
+          });
         }
-        
-        // Load high scores with defaults
-        function loadHighScoresWithDefaults() {
-            let highScores = [];
-            try {
-                const storedScores = localStorage.getItem('highScores');
-                if (storedScores) {
-                    highScores = JSON.parse(storedScores);
-                }
-            } catch (e) {
-                console.error('Error loading high scores:', e);
-            }
-            
-            // Ensure we have 5 entries with defaults
-            while (highScores.length < 5) {
-                highScores.push({ score: 1000, initials: 'UNK' });
-            }
-            
-            // Sort by score
-            highScores.sort((a, b) => b.score - a.score);
-            
-            return highScores.slice(0, 5);
+
+        document.getElementById('current-scores').textContent = output;
+      }
+
+      // Load high scores with defaults
+      function loadHighScoresWithDefaults() {
+        let highScores = [];
+        try {
+          const storedScores = localStorage.getItem('highScores');
+          if (storedScores) {
+            highScores = JSON.parse(storedScores);
+          }
+        } catch (e) {
+          console.error('Error loading high scores:', e);
         }
-        
-        // Add a new high score
-        function addHighScore(score, initials) {
-            // Get current high scores
-            let highScores = JSON.parse(localStorage.getItem('highScores')) || [];
-            
-            // Check if score qualifies
-            let scorePosition = -1;
-            for (let i = 0; i < highScores.length; i++) {
-                if (score > highScores[i].score) {
-                    scorePosition = i;
-                    break;
-                }
-            }
-            
-            let result = '';
-            
-            // If score qualifies, insert it
-            if (scorePosition !== -1 || highScores.length < 5) {
-                if (scorePosition === -1) {
-                    scorePosition = highScores.length;
-                }
-                
-                result = `Score ${score} qualifies at position ${scorePosition + 1}`;
-                highScores.splice(scorePosition, 0, { score, initials });
-                highScores = highScores.slice(0, 5); // Keep only top 5
-                localStorage.setItem('highScores', JSON.stringify(highScores));
-            } else {
-                result = `Score ${score} does not qualify for high scores`;
-            }
-            
-            return result;
+
+        // Ensure we have 5 entries with defaults
+        while (highScores.length < 5) {
+          highScores.push({ score: 1000, initials: 'UNK' });
         }
-        
-        // Event Listeners
-        document.getElementById('refresh-scores').addEventListener('click', displayHighScores);
-        
-        document.getElementById('clear-scores').addEventListener('click', function() {
-            localStorage.removeItem('highScores');
-            displayHighScores();
+
+        // Sort by score
+        highScores.sort((a, b) => b.score - a.score);
+
+        return highScores.slice(0, 5);
+      }
+
+      // Add a new high score
+      function addHighScore(score, initials) {
+        // Get current high scores
+        let highScores = JSON.parse(localStorage.getItem('highScores')) || [];
+
+        // Check if score qualifies
+        let scorePosition = -1;
+        for (let i = 0; i < highScores.length; i++) {
+          if (score > highScores[i].score) {
+            scorePosition = i;
+            break;
+          }
+        }
+
+        let result = '';
+
+        // If score qualifies, insert it
+        if (scorePosition !== -1 || highScores.length < 5) {
+          if (scorePosition === -1) {
+            scorePosition = highScores.length;
+          }
+
+          result = `Score ${score} qualifies at position ${scorePosition + 1}`;
+          highScores.splice(scorePosition, 0, { score, initials });
+          highScores = highScores.slice(0, 5); // Keep only top 5
+          localStorage.setItem('highScores', JSON.stringify(highScores));
+        } else {
+          result = `Score ${score} does not qualify for high scores`;
+        }
+
+        return result;
+      }
+
+      // Event Listeners
+      document
+        .getElementById('refresh-scores')
+        .addEventListener('click', displayHighScores);
+
+      document
+        .getElementById('clear-scores')
+        .addEventListener('click', function () {
+          localStorage.removeItem('highScores');
+          displayHighScores();
         });
-        
-        document.getElementById('add-score').addEventListener('click', function() {
-            const score = parseInt(document.getElementById('score-input').value);
-            const initials = document.getElementById('initials-input').value.toUpperCase().substring(0, 3);
-            
-            const result = addHighScore(score, initials);
-            document.getElementById('add-result').textContent = result;
-            displayHighScores();
+
+      document
+        .getElementById('add-score')
+        .addEventListener('click', function () {
+          const score = parseInt(document.getElementById('score-input').value);
+          const initials = document
+            .getElementById('initials-input')
+            .value.toUpperCase()
+            .substring(0, 3);
+
+          const result = addHighScore(score, initials);
+          document.getElementById('add-result').textContent = result;
+          displayHighScores();
         });
-        
-        document.getElementById('test-defaults').addEventListener('click', function() {
-            localStorage.removeItem('highScores');
-            const defaultScores = loadHighScoresWithDefaults();
-            
-            let output = 'High scores with defaults:\n';
-            defaultScores.forEach((entry, index) => {
-                output += `${index + 1}. ${entry.score} - ${entry.initials}\n`;
-            });
-            
-            document.getElementById('defaults-result').textContent = output;
-            localStorage.setItem('highScores', JSON.stringify(defaultScores));
-            displayHighScores();
+
+      document
+        .getElementById('test-defaults')
+        .addEventListener('click', function () {
+          localStorage.removeItem('highScores');
+          const defaultScores = loadHighScoresWithDefaults();
+
+          let output = 'High scores with defaults:\n';
+          defaultScores.forEach((entry, index) => {
+            output += `${index + 1}. ${entry.score} - ${entry.initials}\n`;
+          });
+
+          document.getElementById('defaults-result').textContent = output;
+          localStorage.setItem('highScores', JSON.stringify(defaultScores));
+          displayHighScores();
         });
-        
-        document.getElementById('load-preset').addEventListener('click', function() {
-            const testScores = [
-                { score: 5000, initials: 'AAA' },
-                { score: 4000, initials: 'BBB' },
-                { score: 3000, initials: 'CCC' },
-                { score: 2000, initials: 'DDD' },
-                { score: 1000, initials: 'EEE' }
-            ];
-            
-            localStorage.setItem('highScores', JSON.stringify(testScores));
-            document.getElementById('preset-result').textContent = 'Preset scores loaded successfully!';
-            displayHighScores();
+
+      document
+        .getElementById('load-preset')
+        .addEventListener('click', function () {
+          const testScores = [
+            { score: 5000, initials: 'AAA' },
+            { score: 4000, initials: 'BBB' },
+            { score: 3000, initials: 'CCC' },
+            { score: 2000, initials: 'DDD' },
+            { score: 1000, initials: 'EEE' },
+          ];
+
+          localStorage.setItem('highScores', JSON.stringify(testScores));
+          document.getElementById('preset-result').textContent =
+            'Preset scores loaded successfully!';
+          displayHighScores();
         });
-        
-        // Initial display
-        displayHighScores();
+
+      // Initial display
+      displayHighScores();
     </script>
-</body>
+  </body>
 </html>

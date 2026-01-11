@@ -40,10 +40,39 @@ A JavaScript game based upon the popular Phaser graphics library. This game feat
 - Updated package dependencies
 - Improved HTML and CSS structure
 
+## Testing
+
+This project uses a series of simple HTML-based test harnesses. To run the tests, first start the http-server with `npm start`, then navigate to the respective `.html` file in your browser.
+
+- `http://localhost:8080/test-state-defaults.html` - Validates the initial state of the game and persistence of `hiScore`.
+- `http://localhost:8080/test-portal-variant.html` - Simulates portal jumps and verifies that the `variantIndex` and background change correctly.
+- `http://localhost:8080/test-background-music.html` - Checks that every background has a valid, preloaded music track associated with it.
+- `http://localhost:8080/test-highscore.html` - A harness for testing the high score submission and display logic.
+
+**Note:** If port `8080` is in use, `http-server` will automatically choose a different port. Check your terminal output for the correct URL.
+
+## Debugging
+
+You can enable debug mode by adding `?debug=1` to the URL. This may enable extra logging or other testing-related functionality.
+
+## Known Footguns
+
+- Do not import using bare specifiers (e.g., import Phaser from 'phaser') inside browser-targeted modules unless you bundle. Use window.Phaser via phaser.min.js or ensure your setup supports module resolution. This project uses installed phaser for development but serves phaser.min.js at root for direct browser usage.
+- Ensure cross-origin compatibility for audio; some browsers block autoplay. Consider user gesture before playing.
+- LocalStorage persistence can be polluted by tests. Clear keys (hiScore, highScores) before/after tests to avoid flaky behavior.
+
 ## Credits
-- Music by <a href="https://pixabay.com/users/djartmusic-46653586/?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=301272">Krzysztof Szymanski</a> from <a href="https://pixabay.com//?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=301272">Pixabay</a>
-- Music by <a href="https://pixabay.com/users/nocopyrightsound633-47610058/?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=322342">NoCopyrightSound633</a> from <a href="https://pixabay.com/music//?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=322342">Pixabay</a>
-- Music by <a href="https://pixabay.com/users/sounduniversestudio-43016639/?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=211547">SoundUniverseStudio</a> from <a href="https://pixabay.com/music//?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=211547">Pixabay</a>
-- Music by <a href="https://pixabay.com/users/kissan4-10387284/?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=358340">kissan4</a> from <a href="https://pixabay.com//?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=358340">Pixabay</a>
-- Music by <a href="https://pixabay.com/users/nickpanek-38266323/?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=218126">Nicholas Panek</a> from <a href="https://pixabay.com/music//?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=218126">Pixabay</a>
-- Music by <a href="https://pixabay.com/users/musicinmedia-43224764/?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=387749">Dvir</a> from <a href="https://pixabay.com//?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=387749">Pixabay</a>
+
+- Music by <a href="https://pixabay.com/users/djartmusic-46653586/?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=301272">Krzysztof Szymanski</a> from <a href="https://pixabay.com//?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=301272">Pixabay</a> (iLoveMy8bit)
+- Music by <a href="https://pixabay.com/users/nocopyrightsound633-47610058/?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=322342">NoCopyrightSound633</a> from <a href="https://pixabay.com/music//?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=322342">Pixabay</a> (8BitMusic)
+- Music by <a href="https://pixabay.com/users/sounduniversestudio-43016639/?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=211547">SoundUniverseStudio</a> from <a href="https://pixabay.com/music//?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=211547">Pixabay</a> (flat8bit)
+- Music by <a href="https://pixabay.com/users/kissan4-10387284/?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=358340">kissan4</a> from <a href="https://pixabay.com//?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=358340">Pixabay</a> (pixelParadise)
+- Music by <a href="https://pixabay.com/users/nickpanek-38266323/?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=218126">Nicholas Panek</a> from <a href="https://pixabay.com/music//?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=218126">Pixabay</a> (percussiveDubstep)
+- Music by <a href="https://pixabay.com/users/musicinmedia-43224764/?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=387749">Dvir</a> from <a href="https://pixabay.com//?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=387749">Pixabay</a> (8bitTheme)
+- Music 'bodenstaendig_2000_in_rock_4bit.mp3' (boden): [TODO: Add attribution]
+- Music 'tommy_in_goa.mp3' (tommy): [TODO: Add attribution]
+- Sound Effect 'player_death.wav' (gameOver): [TODO: Add attribution]
+- Sound Effect 'p-ping.mp3' (ping): [TODO: Add attribution]
+- Sound Effect 'explosion.mp3' (explode): [TODO: Add attribution]
+- Sound Effect 'mario-jumping-sound.mp3' (bounce): [TODO: Add attribution]
+- Sound Effect 'pickup.wav' (portalJump): [TODO: Add attribution]
