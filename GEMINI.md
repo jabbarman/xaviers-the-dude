@@ -1,5 +1,5 @@
 # Project Context: xaviers-the-dude
-Updated: Sat 10 Jan 2026 21:21:47 GMT
+Updated: Sat 10 Jan 2026 22:51:17 GMT
 -e 
 ## Architecture & Tech Stack
 -e 
@@ -653,18 +653,63 @@ A logically ordered, actionable checklist to improve architecture, code quality,
 
 9. [x] Persistence utilities
    - Create a small module src/persistence.js for localStorage get/set with try/catch and defaulting.
-   - Use it in state.js (hiScore) and SceneHighScore (highScores) to a- JSDoc atop public helpers (backgrounds.js, logic.js, theme.js).
+   - Use it in state.js (hiScore) and SceneHighScore (highScores) to avoid duplication and ensure JSON safety.
 
-25. [x] Prepare for future modularization
-    - [x] Consider splitting SceneB into smaller systems (spawning, controls, hud sync) to reduce method size; keep public API stable.
-    - **Planned Changes:**
-        - **HUD/UI setup:** Extract the part that launches the `UIScene` and emits the initial HUD events.
-        - **Audio setup:** Extract the `AudioManager` creation and sound preloading.
-        - **Background and platforms setup:** Extract the logic for selecting and creating the background and platforms based on the `variantIndex`.
-        - **Player setup:** Extract the player sprite creation, physics properties, and animations.
-        - **Input setup:** Extract the cursor keys creation.
-        - **Collectibles setup:** Extract the stars and bombs group creation.
-        - **Colliders setup:** Extract all the `this.physics.add.collider` and `this.physics.add.overlap` calls.
-        - **Game Over handling:** Extract the logic inside `update` that handles the `state.gameOver` condition.
-        - **Portal Jump handling:** Extract the logic inside `update` that handles the `state.portalJump` condition.
-        - **Player movement:** Extract the logic inside `update` that handles player movement based on cursor input.
+10. [x] Testing harness expansion
+    - Add test-state-defaults.html to validate state keys and hiScore load/save behavior (see guidelines 2.3); do not commit permanently unless kept valuable.
+    - Add test-portal-variant.html to simulate portalJump toggling and assert background key and variantIndex changes across restarts.
+    - Add test-background-music.html to verify musicForBackground provides valid preloaded keys for each background.
+
+11. [x] Linting and formatting
+    - Introduce ESLint (ESM, browser, Phaser globals) and a simple npm script (npm run lint).
+    - Optionally add Prettier with sensible defaults; ensure it doesn’t break Phaser pipeline class strings.
+
+12. [x] Document development workflow enhancements
+    - Update README with Known Footguns (from .junie/guidelines.md), testing harness usage, and the http-server port note.
+    - Add a section on enabling debug via a query param or state.debug toggle.
+
+13. [x] Accessibility and UX improvements
+    - Add a global mute toggle (M key) with a small on-screen indicator; store preference in localStorage.
+    - Increase fullscreen button tap target and add a tooltip/hint; ensure safe-area margins on mobile.
+
+14. [x] Performance and memory sanity checks
+    - Provide a simple FPS text toggle (D key when debug=true) for profiling; ensure it’s removed in production.
+    - Audit texture/sound unloading on scene shutdown to prevent leaks (destroy groups, remove timers/tweens where needed).
+
+15. [ ] Asset management consistency
+    - Verify all asset keys referenced in scenes exist and are preloaded in Preloader (bounce sound is present; re-check any newly added keys when refactoring).
+    - Keep src/game_context_configuration.js in sync when keys/scenes change.
+
+16. [x] Reduce duplication in fullscreen handling
+    - Extract fullscreen toggle logic into a helper (src/ui/fullscreen.js) and reuse in SceneB (button + F key).
+
+17. [x] Improve scoreboard UX
+    - In SceneHighScore, render a “Submit” and “Backspace” legend; allow ESC to cancel and return to SceneA.
+    - Clamp initials to A–Z consistently and visually highlight the selection.
+
+18. [x] Add engine and browser compatibility metadata
+    - Add engines field to package.json ("node": ">=18").
+    - Document supported browsers and the requirement to serve over http(s), not file://.
+
+19. [ ] Optional CI smoke checks
+    - Add a lightweight Playwright script that launches http-server, opens test-highscore.html, and asserts highScores localStorage shape.
+    - Wire as npm run ci:smoke and document usage (skip in default install path).
+
+20. [x] Update credits and licensing notes for audio assets
+    - Confirm all audio files used have proper attribution or licensing noted in README; ensure credits match actual keys in Preloader.
+
+21. [x] Tooling hook alignment
+    - Expose backgroundForVariant on game.config in main.js so automation tools (game_context_configuration) expectations match runtime.
+    - When adding scenes or assets, update src/game_context_configuration.js accordingly.
+
+22. [x] Error handling polish
+    - Wrap localStorage JSON.parse with fallbacks; recover from corrupted values by resetting to defaults and logging a warning.
+
+23. [x] Defensive coding in physics callbacks
+    - Guard against null/undefined (e.g., player may be destroyed when hitBomb triggers); early-return with checks in logic.js callbacks.
+
+24. [x] Consistent naming and comments
+    - Ensure scene file names and class names align (already consistent); add concise JSDoc atop public helpers (backgrounds.js, logic.js, theme.js).
+
+25. [ ] Prepare for future modularization
+    - Consider splitting SceneB into smaller systems (spawning, controls, hud sync) to reduce method size; keep public API stable.
