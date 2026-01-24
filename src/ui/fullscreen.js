@@ -10,7 +10,7 @@ import { WIDTH } from '../config.js';
  */
 export function setupFullscreen(scene) {
   const button = scene.add
-    .image(WIDTH - 16, 16, 'fullscreen', 0)
+    .image(WIDTH - 30, 70, 'fullscreen', 0)
     .setOrigin(1, 0)
     .setInteractive({ useHandCursor: true });
   // Increase tap target slightly for mobile UX
@@ -32,7 +32,7 @@ export function setupFullscreen(scene) {
 
   // Tooltip hint
   const hint = scene.add
-    .bitmapText(WIDTH - 84, 18, 'arcade', 'F FULLSCREEN', 12)
+    .bitmapText(WIDTH - 220, 40, 'arcade', 'F FULLSCREEN', 16)
     .setTint(0xcccccc)
     .setDepth(1000);
   hint.setScrollFactor(0);
