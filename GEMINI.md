@@ -711,5 +711,5 @@ A logically ordered, actionable checklist to improve architecture, code quality,
 24. [x] Consistent naming and comments
     - Ensure scene file names and class names align (already consistent); add concise JSDoc atop public helpers (backgrounds.js, logic.js, theme.js).
 
-25. [ ] Prepare for future modularization
+25. [x] Prepare for future modularization
     - Consider splitting SceneB into smaller systems (spawning, controls, hud sync) to reduce method size; keep public API stable.

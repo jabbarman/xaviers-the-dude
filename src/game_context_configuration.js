@@ -85,11 +85,6 @@ const config = {
       'stars',
       'bombs',
       'platforms',
-      'cursors',
-      'scoreText',
-      'hiScoreText',
-      'waveText',
-      'livesText',
       'music',
     ],
     persistence: {
@@ -112,98 +107,98 @@ const config = {
   },
 
   // Inputs that tools may simulate
-      input: {
-      pointer: ['pointerup'],
-      keyboard: [
-        { key: 'LEFT' },
-        { key: 'RIGHT' },
-        { key: 'UP' },
-        { key: 'F', description: 'Toggle fullscreen in SceneB' },
-        { key: 'M', description: 'Toggle mute' },
-        { key: 'ENTER', context: 'SceneHighScore' },
-        { key: 'SPACE', context: 'SceneHighScore' },
-        { key: 'ARROWS', context: 'SceneHighScore navigation' },
-      ],
+  input: {
+    pointer: ['pointerup'],
+    keyboard: [
+      { key: 'LEFT' },
+      { key: 'RIGHT' },
+      { key: 'UP' },
+      { key: 'F', description: 'Toggle fullscreen in SceneB' },
+      { key: 'M', description: 'Toggle mute' },
+      { key: 'ENTER', context: 'SceneHighScore' },
+      { key: 'SPACE', context: 'SceneHighScore' },
+      { key: 'ARROWS', context: 'SceneHighScore navigation' },
+    ],
+  },
+
+  // Known asset keys and their typical usage; helps tools preload/verify
+  assets: {
+    images: [
+      { key: 'background_image', context: 'SceneA' },
+      { key: 'sky', context: 'SceneB background', optional: true },
+      { key: 'alien_landscape', context: 'SceneB background', optional: true },
+      { key: 'ground', context: 'SceneB platforms', optional: true },
+      { key: 'ground_space', context: 'SceneB platforms', optional: true },
+      { key: 'ground_alien', context: 'SceneB platforms', optional: true },
+      { key: 'fullscreen', context: 'SceneB UI', optional: true },
+      { key: 'rub', context: 'SceneHighScore', optional: true },
+      { key: 'end', context: 'SceneHighScore', optional: true },
+      { key: 'block', context: 'SceneHighScore', optional: true },
+    ],
+    spritesheets: [
+      {
+        key: 'dude',
+        context: 'SceneB player',
+        frames: { groups: ['left', 'turn', 'right'] },
+      },
+      { key: 'star', context: 'SceneB collectibles' },
+    ],
+    audio: [
+      { key: 'gameOver', context: 'SceneB' },
+      { key: 'ping', context: 'SceneB' },
+      { key: 'explode', context: 'SceneB' },
+      { key: 'portalJump', context: 'SceneB' },
+      { key: 'boden', context: 'Background music', optional: true },
+      { key: 'tommy', context: 'Background music', optional: true },
+      { key: 'iLoveMy8bit', context: 'Background music', optional: true },
+      { key: '8BitMusic', context: 'Background music', optional: true },
+      { key: 'flat8bit', context: 'Background music', optional: true },
+      { key: '8bitTheme', context: 'Background music', optional: true },
+      { key: 'percussiveDubstep', context: 'Background music', optional: true },
+      { key: 'pixelParadise', context: 'Background music', optional: true },
+    ],
+    bitmapFonts: [{ key: 'arcade', context: 'SceneHighScore' }],
+    // Mappings/hooks that tools might need to invoke
+    dynamic: {
+      // If backgrounds.js provides helper(s) these are their intended roles:
+      // musicForBackground(bgKey:string) => musicKey:string
+      helpers: [{ module: 'backgrounds', functions: ['musicForBackground'] }],
     },
-  
-    // Known asset keys and their typical usage; helps tools preload/verify
-    assets: {
-      images: [
-        { key: 'background_image', context: 'SceneA' },
-        { key: 'sky', context: 'SceneB background', optional: true },
-        { key: 'alien_landscape', context: 'SceneB background', optional: true },
-        { key: 'ground', context: 'SceneB platforms', optional: true },
-        { key: 'ground_space', context: 'SceneB platforms', optional: true },
-        { key: 'ground_alien', context: 'SceneB platforms', optional: true },
-        { key: 'fullscreen', context: 'SceneB UI', optional: true },
-        { key: 'rub', context: 'SceneHighScore', optional: true },
-        { key: 'end', context: 'SceneHighScore', optional: true },
-        { key: 'block', context: 'SceneHighScore', optional: true },
-      ],
-      spritesheets: [
-        {
-          key: 'dude',
-          context: 'SceneB player',
-          frames: { groups: ['left', 'turn', 'right'] },
-        },
-        { key: 'star', context: 'SceneB collectibles' },
-      ],
-      audio: [
-        { key: 'gameOver', context: 'SceneB' },
-        { key: 'ping', context: 'SceneB' },
-        { key: 'explode', context: 'SceneB' },
-        { key: 'portalJump', context: 'SceneB' },
-        { key: 'boden', context: 'Background music', optional: true },
-        { key: 'tommy', context: 'Background music', optional: true },
-        { key: 'iLoveMy8bit', context: 'Background music', optional: true },
-        { key: '8BitMusic', context: 'Background music', optional: true },
-        { key: 'flat8bit', context: 'Background music', optional: true },
-        { key: '8bitTheme', context: 'Background music', optional: true },
-        { key: 'percussiveDubstep', context: 'Background music', optional: true },
-        { key: 'pixelParadise', context: 'Background music', optional: true },
-      ],
-      bitmapFonts: [{ key: 'arcade', context: 'SceneHighScore' }],
-      // Mappings/hooks that tools might need to invoke
-      dynamic: {
-        // If backgrounds.js provides helper(s) these are their intended roles:
-        // musicForBackground(bgKey:string) => musicKey:string
-        helpers: [{ module: 'backgrounds', functions: ['musicForBackground'] }],
+  },
+
+  // Gameplay-relevant knobs helping tools craft scenarios
+  gameplay: {
+    sceneB: {
+      platformsVariantRule: 'variantIndex % 2 toggles layout',
+      stars: {
+        countKey: 'starsPerWave',
+        distribution: 'even across width using WIDTH/(count+1)',
+      },
+      movement: {
+        leftVelocity: -160,
+        rightVelocity: 160,
+        jumpVelocity: -330,
+      },
+      fullscreenToggle: {
+        key: 'F',
+        buttonKey: 'fullscreen',
+      },
+      portal: {
+        triggerFlag: 'portalJump',
+        lifeReward: 1,
+        clears: ['bombs'],
+        transitionsVia: 'PortalScene',
       },
     },
-  
-    // Gameplay-relevant knobs helping tools craft scenarios
-    gameplay: {
-      sceneB: {
-        platformsVariantRule: 'variantIndex % 2 toggles layout',
-        stars: {
-          countKey: 'starsPerWave',
-          distribution: 'even across width using WIDTH/(count+1)',
-        },
-        movement: {
-          leftVelocity: -160,
-          rightVelocity: 160,
-          jumpVelocity: -330,
-        },
-        fullscreenToggle: {
-          key: 'F',
-          buttonKey: 'fullscreen',
-        },
-        portal: {
-          triggerFlag: 'portalJump',
-          lifeReward: 1,
-          clears: ['bombs'],
-          transitionsVia: 'PortalScene',
-        },
-      },
-    },
-  
-    // Conventions and expectations for tools, without enforcing runtime changes
-    conventions: {
-      codingStyle: 'ES modules',
-      assetKeying: 'string keys per Phaser cache',
-      sceneKeys: 'Phaser.Scene keys match constructor super(...) string',
-    },
-  };
-  
-  export default config;
-  
+  },
+
+  // Conventions and expectations for tools, without enforcing runtime changes
+  conventions: {
+    codingStyle: 'ES modules',
+    assetKeying: 'string keys per Phaser cache',
+    sceneKeys: 'Phaser.Scene keys match constructor super(...) string',
+  },
+};
+
+export default config;
+
