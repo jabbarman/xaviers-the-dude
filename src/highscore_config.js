@@ -11,7 +11,7 @@ function queryParam(name) {
   }
 }
 
-const defaultBase = '/api/highscores';
+const defaultBase = 'api/index.php';
 const toNumber = (value, fallback) => {
   const n = parseInt(value, 10);
   return Number.isFinite(n) && n > 0 ? n : fallback;
