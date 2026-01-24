@@ -128,13 +128,13 @@ export class SceneB extends Phaser.Scene {
 
   handleShutdown() {
     try {
-      this.audio.stop();
-      state.stars?.clear(true, true);
-      state.bombs?.clear(true, true);
-      state.platforms?.clear(true, true);
-      this.tweens.killAll();
-      this.time?.removeAllEvents();
-      this.input?.removeAllListeners();
+      this.audio?.stop?.();
+      if (state.stars?.children) state.stars.clear(true, true);
+      if (state.bombs?.children) state.bombs.clear(true, true);
+      if (state.platforms?.children) state.platforms.clear(true, true);
+      this.tweens?.killAll?.();
+      this.time?.removeAllEvents?.();
+      this.input?.removeAllListeners?.();
     } catch (e) {
       console.warn('Error during SceneB shutdown:', e);
     }

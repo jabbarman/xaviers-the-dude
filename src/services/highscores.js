@@ -7,6 +7,7 @@ import {
   HIGHSCORE_REQUEST_TIMEOUT_MS,
   HIGHSCORE_CACHE_MS,
 } from '../highscore_config.js';
+import { state } from '../state.js';
 
 const cache = {
   entries: null,
