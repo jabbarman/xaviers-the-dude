@@ -1,5 +1,5 @@
 # Project Context: xaviers-the-dude
-Updated: Sat 10 Jan 2026 22:51:17 GMT
+Updated: Sat 24 Jan 2026 10:45:00 GMT
 -e 
 ## Architecture & Tech Stack
 -e 
@@ -676,7 +676,7 @@ A logically ordered, actionable checklist to improve architecture, code quality,
     - Provide a simple FPS text toggle (D key when debug=true) for profiling; ensure it’s removed in production.
     - Audit texture/sound unloading on scene shutdown to prevent leaks (destroy groups, remove timers/tweens where needed).
 
-15. [ ] Asset management consistency
+15. [x] Asset management consistency
     - Verify all asset keys referenced in scenes exist and are preloaded in Preloader (bounce sound is present; re-check any newly added keys when refactoring).
     - Keep src/game_context_configuration.js in sync when keys/scenes change.
 
@@ -695,7 +695,7 @@ A logically ordered, actionable checklist to improve architecture, code quality,
     - Add a lightweight Playwright script that launches http-server, opens test-highscore.html, and asserts highScores localStorage shape.
     - Wire as npm run ci:smoke and document usage (skip in default install path).
 
-20. [x] Update credits and licensing notes for audio assets
+20. [ ] Update credits and licensing notes for audio assets
     - Confirm all audio files used have proper attribution or licensing noted in README; ensure credits match actual keys in Preloader.
 
 21. [x] Tooling hook alignment
