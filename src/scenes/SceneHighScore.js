@@ -386,6 +386,7 @@ export class SceneHighScore extends Phaser.Scene {
       // Update global board results
       this.updateBoard(entries.slice(0, 5), 'global', ranks, colors);
     } catch (_e) {
+      console.warn('Error loading global high scores:', _e);
       this.setGlobalStatus('Global board unavailable', 0xffa500);
     }
   }

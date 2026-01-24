@@ -81,20 +81,25 @@ export async function fetchGlobalHighScores({
     }
 
     const url = `${baseUrl}?limit=${encodeURIComponent(limit)}`;
+    if (state.debug) console.log(`Fetching global high scores from: ${url}`);
     const res = await fetchWithTimeout(url, {
       headers: { Accept: 'application/json' },
     });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    if (!res.ok) {
+      console.warn(`Global high-score fetch failed with status: ${res.status} ${res.statusText}`);
+      throw new Error(`HTTP ${res.status}`);
+    }
 
     let data = await res.json();
     const entries = coerceEntries(data, limit);
     cache.entries = entries;
     cache.timestamp = now();
     return { entries, fromCache: false };
-      } catch (_e) {
-        console.warn('Global high-score fetch failed:', _e);
-        throw _e;
-      }}
+  } catch (_e) {
+    console.warn('Error loading global high scores:', _e);
+    throw _e;
+  }
+}
 
 export async function submitGlobalHighScore({
   baseUrl = HIGHSCORE_API_BASE,
