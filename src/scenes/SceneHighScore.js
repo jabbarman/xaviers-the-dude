@@ -129,8 +129,8 @@ export class SceneHighScore extends Phaser.Scene {
       .setScale(PANEL_SCALE);
 
     // Global fallback status sits under the global header (compact)
-    // this._globalStatusText = this.add.bitmapText(rightX, headerY + 18, 'arcade', '').setTint(0xffa500).setScale(0.5);
-    // this._globalStatusText.visible = false;
+    this._globalStatusText = this.add.bitmapText(rightX, headerY + 18, 'arcade', '').setTint(0xffa500).setScale(0.5);
+    this._globalStatusText.visible = false;
 
     // Play Again affordance for clear navigation back to SceneA
     const centerX = this.cameras.main.centerX;
@@ -383,10 +383,8 @@ export class SceneHighScore extends Phaser.Scene {
       this._globalBoardLoaded = true;
       this.setGlobalStatus('', 0xffa500); // clear
 
-      // If no name entry is happening, switch board to global results.
-      if (!newHighScore) {
-        this.updateBoard(entries.slice(0, 5), 'global', ranks, colors);
-      }
+      // Update global board results
+      this.updateBoard(entries.slice(0, 5), 'global', ranks, colors);
     } catch (_e) {
       this.setGlobalStatus('Global board unavailable', 0xffa500);
     }
