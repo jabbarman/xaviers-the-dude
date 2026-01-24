@@ -107,15 +107,6 @@ export class SceneHighScore extends Phaser.Scene {
     var _rub = this.add.image(input.x + 430, input.y + 148, 'rub');
     var _end = this.add.image(input.x + 482, input.y + 148, 'end');
 
-    // Add legends for rub and end
-    this.add
-      .bitmapText(_rub.x - 30, _rub.y + 30, 'arcade', 'BACKSPACE', 16)
-      .setTint(0xffffff)
-      .setOrigin(0.5);
-    this.add
-      .bitmapText(_end.x - 10, _end.y + 30, 'arcade', 'SUBMIT', 16)
-      .setTint(0xffffff)
-      .setOrigin(0.5);
 
     var block = this.add.image(input.x - 10, input.y - 2, 'block').setOrigin(0);
 
