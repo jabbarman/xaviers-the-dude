@@ -107,15 +107,6 @@ export class SceneHighScore extends Phaser.Scene {
     var _rub = this.add.image(input.x + 430, input.y + 148, 'rub');
     var _end = this.add.image(input.x + 482, input.y + 148, 'end');
 
-    // Add legends for rub and end
-    this.add
-      .bitmapText(_rub.x - 30, _rub.y + 30, 'arcade', 'BACKSPACE', 16)
-      .setTint(0xffffff)
-      .setOrigin(0.5);
-    this.add
-      .bitmapText(_end.x - 10, _end.y + 30, 'arcade', 'SUBMIT', 16)
-      .setTint(0xffffff)
-      .setOrigin(0.5);
 
     var block = this.add.image(input.x - 10, input.y - 2, 'block').setOrigin(0);
 
@@ -138,8 +129,8 @@ export class SceneHighScore extends Phaser.Scene {
       .setScale(PANEL_SCALE);
 
     // Global fallback status sits under the global header (compact)
-    // this._globalStatusText = this.add.bitmapText(rightX, headerY + 18, 'arcade', '').setTint(0xffa500).setScale(0.5);
-    // this._globalStatusText.visible = false;
+    this._globalStatusText = this.add.bitmapText(rightX, headerY + 18, 'arcade', '').setTint(0xffa500).setScale(0.5);
+    this._globalStatusText.visible = false;
 
     // Play Again affordance for clear navigation back to SceneA
     const centerX = this.cameras.main.centerX;
@@ -392,11 +383,10 @@ export class SceneHighScore extends Phaser.Scene {
       this._globalBoardLoaded = true;
       this.setGlobalStatus('', 0xffa500); // clear
 
-      // If no name entry is happening, switch board to global results.
-      if (!newHighScore) {
-        this.updateBoard(entries.slice(0, 5), 'global', ranks, colors);
-      }
+      // Update global board results
+      this.updateBoard(entries.slice(0, 5), 'global', ranks, colors);
     } catch (_e) {
+      console.warn('Error loading global high scores:', _e);
       this.setGlobalStatus('Global board unavailable', 0xffa500);
     }
   }

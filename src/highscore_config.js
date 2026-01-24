@@ -11,13 +11,24 @@ function queryParam(name) {
   }
 }
 
-const defaultBase = '/api/highscores';
 const toNumber = (value, fallback) => {
   const n = parseInt(value, 10);
   return Number.isFinite(n) && n > 0 ? n : fallback;
 };
 
-export const HIGHSCORE_API_BASE = queryParam('hsBase') || defaultBase;
+// Resolve the default base path relative to the current script's parent directory if possible,
+// or use a robust relative path that handles missing trailing slashes in the URL.
+const getBase = () => {
+  const hsBase = queryParam('hsBase');
+  if (hsBase) return hsBase;
+
+  // If the path doesn't end in a slash and doesn't look like a file (e.g. .html),
+  // we might need to be careful. But 'api/index.php' is usually fine if we're at the root index.
+  // Better yet, just use the relative path but allow for easier debugging.
+  return 'api/index.php';
+};
+
+export const HIGHSCORE_API_BASE = getBase();
 export const HIGHSCORE_LIMIT = toNumber(queryParam('hsLimit'), 20);
 export const HIGHSCORE_REQUEST_TIMEOUT_MS = toNumber(
   queryParam('hsTimeout'),

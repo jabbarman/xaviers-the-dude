@@ -12,11 +12,11 @@ export class UIScene extends Phaser.Scene {
     this.waveText = addHud(this, 10, 30, 'WAVE : ' + state.wave);
     this.scoreText = addHud(this, 10, 50, 'SCORE: ' + state.score);
 
-    // Mute indicator (top-right)
-    this.muteText = addHud(this, 640, 10, '[M] SOUND: ON');
+    // Mute indicator (top-right, moved left to prevent overflow)
+    this.muteText = addHud(this, 580, 10, 'M Sound: On');
 
-    // Optional FPS (debug only)
-    this.fpsText = addHud(this, 640, 30, 'FPS: 0');
+    // Optional FPS (debug only, also moved left)
+    this.fpsText = addHud(this, 580, 30, 'FPS: 0');
     this.fpsText.visible = false;
 
     // Bind handlers once and keep references for removal on shutdown
@@ -40,7 +40,7 @@ export class UIScene extends Phaser.Scene {
     };
     this._onMute = (muted) => {
       try {
-        this.muteText.setText('[M] SOUND: ' + (muted ? 'OFF' : 'ON'));
+        this.muteText.setText('M Sound: ' + (muted ? 'Off' : 'On'));
       } catch (e) { console.warn('Error updating mute text:', e); }
     };
 
