@@ -14,6 +14,7 @@ export class HUDSync {
         this.scene.game.events.emit('hud:score', state.score);
         this.scene.game.events.emit('hud:hiscore', state.hiScore);
         this.scene.game.events.emit('hud:wave', state.wave);
+        this.emitMute(this.scene.sound.mute);
     }
 
     stopHUD() {
