@@ -11,15 +11,25 @@ $maxLimit = 50;
 $defaultLimit = 20;
 
 header('Content-Type: application/json');
+header("Access-Control-Allow-Origin: *");
+header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
+header("Access-Control-Allow-Headers: Content-Type");
+header("X-Debug-Method: " . $_SERVER['REQUEST_METHOD']);
+
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    exit;
+}
 
 // --- Helper Functions ---
-function respond($data, $status = 200) {
+function respond($data, $status = 200)
+{
     http_response_code($status);
     echo json_encode($data);
     exit;
 }
 
-function error($message, $status = 400) {
+function error($message, $status = 400)
+{
     respond(['error' => $message], $status);
 }
 
@@ -36,7 +46,7 @@ try {
         score INTEGER NOT NULL,
         createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
     )");
-    
+
     // Index for faster retrieval
     $db->exec("CREATE INDEX IF NOT EXISTS idx_highscores_score ON highscores (score DESC, createdAt ASC)");
 
@@ -50,15 +60,17 @@ $method = $_SERVER['REQUEST_METHOD'];
 if ($method === 'GET') {
     // --- Fetch Scores ---
     $limit = isset($_GET['limit']) ? filter_var($_GET['limit'], FILTER_VALIDATE_INT) : $defaultLimit;
-    if ($limit === false || $limit < 1) $limit = $defaultLimit;
-    if ($limit > $maxLimit) $limit = $maxLimit;
+    if ($limit === false || $limit < 1)
+        $limit = $defaultLimit;
+    if ($limit > $maxLimit)
+        $limit = $maxLimit;
 
     try {
         $stmt = $db->prepare("SELECT initials, score, createdAt FROM highscores ORDER BY score DESC, createdAt ASC LIMIT :limit");
         $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
         $stmt->execute();
         $results = $stmt->fetchAll();
-        
+
         respond($results);
     } catch (PDOException $e) {
         error("Failed to fetch high scores: " . $e->getMessage(), 500);
@@ -87,8 +99,8 @@ if ($method === 'GET') {
 
     try {
         $stmt = $db->prepare("INSERT INTO highscores (initials, score) VALUES (?, ?)");
-        $stmt->execute([$initials, (int)$score]);
-        
+        $stmt->execute([$initials, (int) $score]);
+
         respond(['status' => 'success', 'message' => 'Score recorded'], 201);
     } catch (PDOException $e) {
         error("Failed to save score: " . $e->getMessage(), 500);

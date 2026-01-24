@@ -30,7 +30,7 @@ A JavaScript game based upon the popular Phaser graphics library. This game feat
 - The high-score scene now attempts to fetch/submit a global leaderboard via `/api/highscores` (GET/POST).
 - Configure a different base with query params: `?hsBase=http://localhost:3000/api/highscores&hsTimeout=7000`.
 - If the service is unreachable, the game falls back to local scores and shows a notice; gameplay is unaffected.
-- Local mock server for dev: `npm run mock:highscores` (defaults to http://localhost:3000). Then start the game with `npm start` and open `http://localhost:8080?hsBase=http://localhost:3000/api/highscores`.
+- Local mock server for dev: `npm run mock:highscores` (defaults to http://localhost:3000). Then start the game with `npm start` and open `http://localhost:8080?hsBase=https://www.jabbar.co.uk/xavier/thedude/api/index.php`.
 
 ## Recent Updates
 
