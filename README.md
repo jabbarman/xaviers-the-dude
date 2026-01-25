@@ -1,78 +1,63 @@
 # Xavier's The Dude
 
-A JavaScript game based upon the popular Phaser graphics library. This game features "The Dude" character who collects stars while avoiding bombs.
+A JavaScript game built with the Phaser 3 framework. This game features "The Dude" who collects stars while avoiding bombs across multiple worlds.
 
 ## Game Features
 
-- Multiple game scenes including start screen, gameplay, end screen, and high score input
-- Collect stars to increase your score
-- Avoid bombs or lose lives
-- Special portal jumps every 5 waves (new world each jump: Sky -> Starry -> Saturn)
-- Background music and sound effects
-- Mobile-friendly responsive design
-
-## Technical Details
-
-- Built with Phaser 3.90.0 (latest version as of August 2025)
-- Pure JavaScript implementation using ES modules for maintainability
-- No build tools required - runs directly in the browser
-- Modular structure under `src/` (scenes, shared state, config, and logic)
+- Multiple game scenes: Start, Gameplay, Game Over, and High Score.
+- Collect stars to increase your score.
+- Avoid bombs or lose lives.
+- Special "portal jumps" to new worlds with different backgrounds and music.
+- Global and local high score tracking.
+- Mobile-friendly responsive design.
 
 ## How to Run
 
-1. Clone this repository
-2. Install dependencies with `npm install`
-3. Start the game with `npm start`
-4. Open your browser to the URL shown in the terminal (usually http://localhost:8080)
+1.  **Clone this repository.**
+2.  **Install dependencies:**
+    ```sh
+    npm install
+    ```
+3.  **Start the local server:**
+    ```sh
+    npm start
+    ```
+4.  Open your browser to the URL shown in the terminal (usually `http://localhost:8080`).
 
 ## Global High Scores
 
-- The high-score scene now attempts to fetch/submit a global leaderboard via `/api/highscores` (GET/POST).
-- Configure a different base with query params: `?hsBase=http://localhost:3000/api/highscores&hsTimeout=7000`.
-- If the service is unreachable, the game falls back to local scores and shows a notice; gameplay is unaffected.
-- Local mock server for dev: `npm run mock:highscores` (defaults to http://localhost:3000). Then start the game with `npm start` and open `http://localhost:8080?hsBase=https://www.jabbar.co.uk/xavier/thedude/api/index.php`.
+The game supports a global high score board. For local development, you can run a mock server.
 
-## Recent Updates
+1.  **Start the mock server** in a separate terminal:
+    ```sh
+    npm run mock:highscores
+    ```
+    This will run on `http://localhost:3000`.
 
-- Updated to latest Phaser version (3.90.0)
-- Improved async/await handling for game events
-- Enhanced mobile responsiveness
-- Updated package dependencies
-- Improved HTML and CSS structure
+2.  **Start the game** and append the following query parameter to the URL in your browser to point the game at your mock server:
+    `?hsBase=http://localhost:3000/api/highscores`
 
-## Testing
+If the service is unreachable, the game gracefully falls back to using local storage for high scores.
 
-This project uses a series of simple HTML-based test harnesses. To run the tests, first start the http-server with `npm start`, then navigate to the respective `.html` file in your browser.
+## Development Notes
 
-- `http://localhost:8080/test-state-defaults.html` - Validates the initial state of the game and persistence of `hiScore`.
-- `http://localhost:8080/test-portal-variant.html` - Simulates portal jumps and verifies that the `variantIndex` and background change correctly.
-- `http://localhost:8080/test-background-music.html` - Checks that every background has a valid, preloaded music track associated with it.
-- `http://localhost:8080/test-highscore.html` - A harness for testing the high score submission and display logic.
-
-**Note:** If port `8080` is in use, `http-server` will automatically choose a different port. Check your terminal output for the correct URL.
-
-## Debugging
-
-You can enable debug mode by adding `?debug=1` to the URL. This may enable extra logging or other testing-related functionality.
-
-## Known Footguns
-
-- Do not import using bare specifiers (e.g., import Phaser from 'phaser') inside browser-targeted modules unless you bundle. Use window.Phaser via phaser.min.js or ensure your setup supports module resolution. This project uses installed phaser for development but serves phaser.min.js at root for direct browser usage.
-- Ensure cross-origin compatibility for audio; some browsers block autoplay. Consider user gesture before playing.
-- LocalStorage persistence can be polluted by tests. Clear keys (hiScore, highScores) before/after tests to avoid flaky behavior.
+-   **Debugging:** You can enable debug mode by adding `?debug=1` to the URL. This may enable extra logging or visual debugging aids in Phaser.
+-   **Phaser Global:** This project uses `phaser.min.js` included via a `<script>` tag in `index.html`, which makes `Phaser` a global variable. Do not use `import Phaser from 'phaser'` in the client-side modules, as no bundling process is configured.
+-   **Audio Context:** Be aware of browser autoplay policies. Audio playback should be initiated by a user gesture (like a click) to work reliably.
+-   **LocalStorage:** Game state like `hiScore` and `highScores` is saved in `localStorage`. You may want to clear this between testing sessions to ensure a clean state.
 
 ## Credits
 
-- Music by <a href="https://pixabay.com/users/djartmusic-46653586/?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=301272">Krzysztof Szymanski</a> from <a href="https://pixabay.com//?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=301272">Pixabay</a> (iLoveMy8bit)
-- Music by <a href="https://pixabay.com/users/nocopyrightsound633-47610058/?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=322342">NoCopyrightSound633</a> from <a href="https://pixabay.com/music//?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=322342">Pixabay</a> (8BitMusic)
-- Music by <a href="https://pixabay.com/users/sounduniversestudio-43016639/?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=211547">SoundUniverseStudio</a> from <a href="https://pixabay.com/music//?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=211547">Pixabay</a> (flat8bit)
-- Music by <a href="https://pixabay.com/users/kissan4-10387284/?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=358340">kissan4</a> from <a href="https://pixabay.com//?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=358340">Pixabay</a> (pixelParadise)
-- Music by <a href="https://pixabay.com/users/nickpanek-38266323/?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=218126">Nicholas Panek</a> from <a href="https://pixabay.com/music//?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=218126">Pixabay</a> (percussiveDubstep)
-- Music by <a href="https://pixabay.com/users/musicinmedia-43224764/?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=387749">Dvir</a> from <a href="https://pixabay.com//?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=387749">Pixabay</a> (8bitTheme)
-- Music 'bodenstaendig_2000_in_rock_4bit.mp3' (boden): [TODO: Add attribution]
-- Music 'tommy_in_goa.mp3' (tommy): [TODO: Add attribution]
-- Sound Effect 'player_death.wav' (gameOver): [TODO: Add attribution]
-- Sound Effect 'p-ping.mp3' (ping): [TODO: Add attribution]
-- Sound Effect 'explosion.mp3' (explode): [TODO: Add attribution]
-- Sound Effect 'mario-jumping-sound.mp3' (bounce): [TODO: Add attribution]
-- Sound Effect 'pickup.wav' (portalJump): [TODO: Add attribution]
+-   **Music by [Krzysztof Szymanski](https://pixabay.com/users/djartmusic-46653586/)** from Pixabay (iLoveMy8bit)
+-   **Music by [NoCopyrightSound633](https://pixabay.com/users/nocopyrightsound633-47610058/)** from Pixabay (8BitMusic)
+-   **Music by [SoundUniverseStudio](https://pixabay.com/users/sounduniversestudio-43016639/)** from Pixabay (flat8bit)
+-   **Music by [kissan4](https://pixabay.com/users/kissan4-10387284/)** from Pixabay (pixelParadise)
+-   **Music by [Nicholas Panek](https://pixabay.com/users/nickpanek-38266323/)** from Pixabay (percussiveDubstep)
+-   **Music by [Dvir](https://pixabay.com/users/musicinmedia-43224764/)** from Pixabay (8bitTheme)
+-   **Music 'bodenstaendig_2000_in_rock_4bit.mp3' (boden):** [TODO: Add attribution]
+-   **Music 'tommy_in_goa.mp3' (tommy):** [TODO: Add attribution]
+-   **Sound Effect 'player_death.wav' (gameOver):** [TODO: Add attribution]
+-   **Sound Effect 'p-ping.mp3' (ping):** [TODO: Add attribution]
+-   **Sound Effect 'explosion.mp3' (explode):** [TODO: Add attribution]
+-   **Sound Effect 'mario-jumping-sound.mp3' (bounce):** [TODO: Add attribution]
+-   **Sound Effect 'pickup.wav' (portalJump):** [TODO: Add attribution]

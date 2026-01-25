@@ -34,4 +34,4 @@ export const HIGHSCORE_REQUEST_TIMEOUT_MS = toNumber(
   queryParam('hsTimeout'),
   5000,
 );
-export const HIGHSCORE_CACHE_MS = toNumber(queryParam('hsCacheMs'), 60000);
+export const HIGHSCORE_CACHE_MS = toNumber(queryParam('hsCacheMs'), 10000);
