@@ -1,6 +1,6 @@
 {
   "name": "xaviers-the-dude",
-  "version": "1.0.0",
+  "version": "1.3.0",
   "description": "A JavaScript game based upon the popular Phaser graphics Library",
   "type": "module",
   "main": "src/main.js",
