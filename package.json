@@ -9,6 +9,7 @@
   },
   "scripts": {
     "start": "http-server -o",
+    "version": "node scripts/fetch-version.js",
     "mock:highscores": "node scripts/mock-highscores.js",
     "lint": "eslint .",
     "format": "prettier --write ."
