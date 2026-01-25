@@ -81,7 +81,8 @@ export async function fetchGlobalHighScores({
       return { entries: cache.entries, fromCache: true };
     }
 
-    const url = `${baseUrl}?limit=${encodeURIComponent(limit)}`;
+    const separator = baseUrl.includes('?') ? '&' : '?';
+    const url = `${baseUrl}${separator}limit=${encodeURIComponent(limit)}&_t=${now()}`;
     if (state.debug) console.log(`Fetching global high scores from: ${url}`);
     const res = await fetchWithTimeout(url, {
       headers: { Accept: 'application/json' },
