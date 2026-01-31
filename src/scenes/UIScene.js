@@ -145,7 +145,11 @@ export class UIScene extends Phaser.Scene {
       MOBILE_BUTTON_OPACITY,
     ).setInteractive();
 
-    this.jumpBtn.on('pointerdown', () => mainScene.controls.setTouchJump(true));
+    this.jumpBtn.on('pointerdown', () => {
+      if (mainScene.player && mainScene.player.body.touching.down) {
+        mainScene.controls.setTouchJump(true);
+      }
+    });
 
     // Add labels
     this.add.bitmapText(this.leftBtn.x, this.leftBtn.y, 'arcade', '<', 30).setOrigin(0.5);
