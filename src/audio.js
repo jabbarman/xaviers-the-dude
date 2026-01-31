@@ -20,9 +20,20 @@ export class AudioManager {
     try {
       this.current?.stop?.();
     } catch (e) { console.warn('Error stopping AudioManager current track:', e); }
-    this.current = this.scene.sound.add(trackKey);
-    this.current.play();
-    return this.current;
+
+    const play = () => {
+      this.current = this.scene.sound.add(trackKey);
+      this.current.play();
+      return this.current;
+    };
+
+    if (this.scene.sound.locked) {
+      this.scene.sound.once(Phaser.Sound.Events.UNLOCKED, () => {
+        play();
+      });
+    } else {
+      play();
+    }
   }
 
   setMuted(muted) {
