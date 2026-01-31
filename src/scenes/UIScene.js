@@ -146,7 +146,7 @@ export class UIScene extends Phaser.Scene {
     ).setInteractive();
 
     this.jumpBtn.on('pointerdown', () => {
-      if (mainScene.player && mainScene.player.body.touching.down) {
+      if (state.player && state.player.body.touching.down) {
         mainScene.controls.setTouchJump(true);
       }
     });
