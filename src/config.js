@@ -25,3 +25,9 @@ export const GAME_OVER_TEXT = {
   fontSize: '64px',
   fill: '#000',
 };
+
+// Mobile UI Constants
+export const MOBILE_BUTTON_SIZE = 80;
+export const MOBILE_BUTTON_MARGIN = 20;
+export const MOBILE_BUTTON_OPACITY = 0.5;
+export const MOBILE_BUTTON_COLOR = 0x888888;

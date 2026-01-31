@@ -1,5 +1,13 @@
 import { state } from '../state.js';
 import { addHud } from '../theme.js';
+import {
+  WIDTH,
+  HEIGHT,
+  MOBILE_BUTTON_SIZE,
+  MOBILE_BUTTON_MARGIN,
+  MOBILE_BUTTON_OPACITY,
+  MOBILE_BUTTON_COLOR,
+} from '../config.js';
 
 export class UIScene extends Phaser.Scene {
   constructor() {
@@ -14,6 +22,9 @@ export class UIScene extends Phaser.Scene {
 
     // Mute indicator (top-right, moved left to prevent overflow)
     this.muteText = addHud(this, 580, 10, 'M Sound: On');
+
+    // Create mobile controls if touch is available
+    this.createMobileControls();
 
     // Optional FPS (debug only, also moved left)
     this.fpsText = addHud(this, 580, 30, 'FPS: 0');
@@ -91,5 +102,58 @@ export class UIScene extends Phaser.Scene {
         this.input.keyboard.removeAllListeners();
       } catch (e) { console.warn('Error removing keyboard listeners on UIScene shutdown:', e); }
     });
+  }
+
+  createMobileControls() {
+    // Only show on touch devices
+    if (!this.sys.game.device.input.touch) return;
+
+    const mainScene = this.scene.get('SceneB');
+
+    // Left Button
+    this.leftBtn = this.add.circle(
+      MOBILE_BUTTON_MARGIN + MOBILE_BUTTON_SIZE / 2,
+      HEIGHT - MOBILE_BUTTON_MARGIN - MOBILE_BUTTON_SIZE / 2,
+      MOBILE_BUTTON_SIZE / 2,
+      MOBILE_BUTTON_COLOR,
+      MOBILE_BUTTON_OPACITY,
+    ).setInteractive();
+
+    this.leftBtn.on('pointerdown', () => mainScene.controls.setTouchLeft(true));
+    this.leftBtn.on('pointerup', () => mainScene.controls.setTouchLeft(false));
+    this.leftBtn.on('pointerout', () => mainScene.controls.setTouchLeft(false));
+
+    // Right Button
+    this.rightBtn = this.add.circle(
+      MOBILE_BUTTON_MARGIN * 2 + MOBILE_BUTTON_SIZE * 1.5,
+      HEIGHT - MOBILE_BUTTON_MARGIN - MOBILE_BUTTON_SIZE / 2,
+      MOBILE_BUTTON_SIZE / 2,
+      MOBILE_BUTTON_COLOR,
+      MOBILE_BUTTON_OPACITY,
+    ).setInteractive();
+
+    this.rightBtn.on('pointerdown', () => mainScene.controls.setTouchRight(true));
+    this.rightBtn.on('pointerup', () => mainScene.controls.setTouchRight(false));
+    this.rightBtn.on('pointerout', () => mainScene.controls.setTouchRight(false));
+
+    // Jump Button
+    this.jumpBtn = this.add.circle(
+      WIDTH - MOBILE_BUTTON_MARGIN - MOBILE_BUTTON_SIZE / 2,
+      HEIGHT - MOBILE_BUTTON_MARGIN - MOBILE_BUTTON_SIZE / 2,
+      MOBILE_BUTTON_SIZE / 2,
+      MOBILE_BUTTON_COLOR,
+      MOBILE_BUTTON_OPACITY,
+    ).setInteractive();
+
+    this.jumpBtn.on('pointerdown', () => {
+      if (state.player && state.player.body.touching.down) {
+        mainScene.controls.setTouchJump(true);
+      }
+    });
+
+    // Add labels
+    this.add.bitmapText(this.leftBtn.x, this.leftBtn.y, 'arcade', '<', 30).setOrigin(0.5);
+    this.add.bitmapText(this.rightBtn.x, this.rightBtn.y, 'arcade', '>', 30).setOrigin(0.5);
+    this.add.bitmapText(this.jumpBtn.x, this.jumpBtn.y, 'arcade', '^', 30).setOrigin(0.5);
   }
 }

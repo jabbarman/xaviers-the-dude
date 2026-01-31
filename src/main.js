@@ -20,6 +20,9 @@ const config = {
     width: WIDTH,
     height: HEIGHT,
   },
+  input: {
+    activePointers: 3, // Support for multi-touch (L/R + Jump)
+  },
   pixelArt: true,
   render: { pixelArt: true, roundPixels: true },
   physics: {
@@ -43,5 +46,5 @@ const config = {
 // Attach tooling hook for background variants
 config.backgroundForVariant = backgroundForVariant;
 
- 
+
 new Phaser.Game(config);

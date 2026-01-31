@@ -4,15 +4,24 @@ export class Controls {
     constructor(scene) {
         this.scene = scene;
         this.cursors = scene.input.keyboard.createCursorKeys();
+
+        // Touch input state
+        this.touchLeft = false;
+        this.touchRight = false;
+        this.touchJump = false;
     }
 
     update(player, isGameOver) {
         if (isGameOver || !player || !player.body) return;
 
-        if (this.cursors.left.isDown) {
+        const left = this.cursors.left.isDown || this.touchLeft;
+        const right = this.cursors.right.isDown || this.touchRight;
+        const jump = (this.cursors.up.isDown || this.touchJump) && player.body.touching.down;
+
+        if (left) {
             player.setVelocityX(-PLAYER_SPEED_X);
             player.anims.play('left', true);
-        } else if (this.cursors.right.isDown) {
+        } else if (right) {
             player.setVelocityX(PLAYER_SPEED_X);
             player.anims.play('right', true);
         } else {
@@ -20,8 +29,13 @@ export class Controls {
             player.anims.play('turn');
         }
 
-        if (this.cursors.up.isDown && player.body.touching.down) {
+        if (jump) {
             player.setVelocityY(PLAYER_JUMP_VELOCITY);
+            this.touchJump = false; // Reset jump state after triggering
         }
     }
+
+    setTouchLeft(down) { this.touchLeft = down; }
+    setTouchRight(down) { this.touchRight = down; }
+    setTouchJump(down) { this.touchJump = down; }
 }
