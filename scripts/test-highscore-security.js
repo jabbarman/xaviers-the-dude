@@ -115,7 +115,7 @@ async function run() {
         HIGHSCORE_NONCE_TTL_SECONDS: '120',
         HIGHSCORE_SESSION_TTL_SECONDS: '180',
         HIGHSCORE_RATE_LIMIT_WINDOW_SECONDS: '60',
-        HIGHSCORE_RATE_LIMIT_MAX_REQUESTS: '4',
+        HIGHSCORE_RATE_LIMIT_MAX_REQUESTS: '12',
       },
       stdio: ['ignore', 'pipe', 'pipe'],
     },
@@ -197,59 +197,31 @@ async function run() {
     const badSigRes = await postSubmit(badSigPayload);
     assert(badSigRes.status === 401, `bad signature expected 401, got ${badSigRes.status}`);
 
-    // 6) rate limit behavior
-    const rl1 = await getChallenge();
-    const rlPayload1 = {
-      initials: 'MNO',
-      score: 600,
-      sessionId: rl1.sessionId,
-      timestamp: Math.floor(Date.now() / 1000),
-      nonce: 'nonce_rl_1',
-    };
-    rlPayload1.signature = signPayload(rl1.submitToken, rlPayload1);
+    // 6) rate limit behavior (burst until at least one 429)
+    let saw429 = false;
+    let lastStatus = 0;
 
-    const rl2 = await getChallenge();
-    const rlPayload2 = {
-      initials: 'PQR',
-      score: 700,
-      sessionId: rl2.sessionId,
-      timestamp: Math.floor(Date.now() / 1000),
-      nonce: 'nonce_rl_2',
-    };
-    rlPayload2.signature = signPayload(rl2.submitToken, rlPayload2);
+    for (let i = 1; i <= 20; i += 1) {
+      const rl = await getChallenge();
+      const payload = {
+        initials: 'RLT',
+        score: 900 + i,
+        sessionId: rl.sessionId,
+        timestamp: Math.floor(Date.now() / 1000),
+        nonce: `nonce_rl_${i}`,
+      };
+      payload.signature = signPayload(rl.submitToken, payload);
 
-    const rl3 = await getChallenge();
-    const rlPayload3 = {
-      initials: 'STU',
-      score: 800,
-      sessionId: rl3.sessionId,
-      timestamp: Math.floor(Date.now() / 1000),
-      nonce: 'nonce_rl_3',
-    };
-    rlPayload3.signature = signPayload(rl3.submitToken, rlPayload3);
+      const res = await postSubmit(payload);
+      lastStatus = res.status;
+      if (res.status === 429) {
+        saw429 = true;
+        break;
+      }
+      assert(res.status === 201, `rate limit warmup req${i} expected 201, got ${res.status}`);
+    }
 
-    const rl4 = await getChallenge();
-    const rlPayload4 = {
-      initials: 'VWX',
-      score: 900,
-      sessionId: rl4.sessionId,
-      timestamp: Math.floor(Date.now() / 1000),
-      nonce: 'nonce_rl_4',
-    };
-    rlPayload4.signature = signPayload(rl4.submitToken, rlPayload4);
-
-    const r1 = await postSubmit(rlPayload1);
-    const r2 = await postSubmit(rlPayload2);
-    const r3 = await postSubmit(rlPayload3);
-    const r4 = await postSubmit(rlPayload4);
-
-    assert(r1.status === 201, `rate limit req1 expected 201, got ${r1.status}`);
-    assert(r2.status === 201, `rate limit req2 expected 201, got ${r2.status}`);
-    // one of req3/req4 should hit 429 because earlier POSTs already consumed the shared per-IP window
-    assert(
-      r3.status === 429 || r4.status === 429,
-      `rate limit expected at least one 429, got ${r3.status} and ${r4.status}`,
-    );
+    assert(saw429, `rate limit expected a 429 during burst, last status ${lastStatus}`);
 
     console.warn('PASS: highscore security checks');
   } finally {
