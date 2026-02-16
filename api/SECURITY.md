@@ -41,12 +41,15 @@ Primary variables:
 
 ## Local/dev setup
 
-1. Configure env vars in your PHP host (or shell export) using `.env.example` as a template.
-2. Serve the project through PHP (example):
+1. Configure env vars using one of these methods:
+   - PHP host environment variables (preferred for production), or
+   - local dotenv files loaded by the API (`api/.env.local`, `api/.env`, repo `.env.local`, repo `.env`).
+2. Use `.env.example` as the template and never commit real secrets.
+3. Serve the project through PHP (example):
    ```sh
    HIGHSCORE_ALLOWED_ORIGINS=http://localhost:8080 php -S 127.0.0.1:8123 -t .
    ```
-3. Point the game to the API endpoint, e.g. `?hsBase=http://127.0.0.1:8123/api/index.php`.
+4. Point the game to the API endpoint, e.g. `?hsBase=http://127.0.0.1:8123/api/index.php`.
 
 ## Threat model caveat
 

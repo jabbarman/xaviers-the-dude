@@ -11,20 +11,28 @@
  * - CORS allowlist via environment variable
  */
 
+// --- Environment bootstrap (supports no-root shared hosting) ---
+$dotenv = loadDotEnvFiles([
+    __DIR__ . '/.env.local',
+    __DIR__ . '/.env',
+    dirname(__DIR__) . '/.env.local',
+    dirname(__DIR__) . '/.env',
+]);
+
 // --- Configuration ---
 $dbFile = __DIR__ . '/highscores.sqlite';
 $maxLimit = 50;
 $defaultLimit = 20;
 
-$scoreMin = envInt('HIGHSCORE_SCORE_MIN', 1);
-$scoreMax = envInt('HIGHSCORE_SCORE_MAX', 1000000);
-$maxScoreDelta = envInt('HIGHSCORE_MAX_SCORE_DELTA', 200000);
-$maxTimestampSkewSec = envInt('HIGHSCORE_MAX_TIMESTAMP_SKEW_SECONDS', 30);
-$nonceTtlSec = envInt('HIGHSCORE_NONCE_TTL_SECONDS', 120);
-$sessionTtlSec = envInt('HIGHSCORE_SESSION_TTL_SECONDS', 180);
-$rateLimitWindowSec = envInt('HIGHSCORE_RATE_LIMIT_WINDOW_SECONDS', 60);
-$rateLimitMaxRequests = envInt('HIGHSCORE_RATE_LIMIT_MAX_REQUESTS', 10);
-$allowedOrigins = envCsv('HIGHSCORE_ALLOWED_ORIGINS', '');
+$scoreMin = envInt('HIGHSCORE_SCORE_MIN', 1, $dotenv);
+$scoreMax = envInt('HIGHSCORE_SCORE_MAX', 1000000, $dotenv);
+$maxScoreDelta = envInt('HIGHSCORE_MAX_SCORE_DELTA', 200000, $dotenv);
+$maxTimestampSkewSec = envInt('HIGHSCORE_MAX_TIMESTAMP_SKEW_SECONDS', 30, $dotenv);
+$nonceTtlSec = envInt('HIGHSCORE_NONCE_TTL_SECONDS', 120, $dotenv);
+$sessionTtlSec = envInt('HIGHSCORE_SESSION_TTL_SECONDS', 180, $dotenv);
+$rateLimitWindowSec = envInt('HIGHSCORE_RATE_LIMIT_WINDOW_SECONDS', 60, $dotenv);
+$rateLimitMaxRequests = envInt('HIGHSCORE_RATE_LIMIT_MAX_REQUESTS', 10, $dotenv);
+$allowedOrigins = envCsv('HIGHSCORE_ALLOWED_ORIGINS', '', $dotenv);
 
 header('Content-Type: application/json');
 header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
@@ -65,9 +73,76 @@ function errorResponse($message, $status = 400)
     respond(['error' => $message], $status);
 }
 
-function envInt($name, $default)
+function loadDotEnvFiles($paths)
+{
+    $vars = [];
+
+    foreach ($paths as $path) {
+        if (!is_string($path) || $path === '' || !is_file($path) || !is_readable($path)) {
+            continue;
+        }
+
+        $lines = @file($path, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+        if (!is_array($lines)) {
+            continue;
+        }
+
+        foreach ($lines as $line) {
+            $trimmed = trim($line);
+            if ($trimmed === '' || str_starts_with($trimmed, '#')) {
+                continue;
+            }
+
+            $eqPos = strpos($trimmed, '=');
+            if ($eqPos === false) {
+                continue;
+            }
+
+            $key = trim(substr($trimmed, 0, $eqPos));
+            $value = trim(substr($trimmed, $eqPos + 1));
+            if ($key === '') {
+                continue;
+            }
+
+            if (
+                (str_starts_with($value, '"') && str_ends_with($value, '"')) ||
+                (str_starts_with($value, "'") && str_ends_with($value, "'"))
+            ) {
+                $value = substr($value, 1, -1);
+            }
+
+            $vars[$key] = $value;
+        }
+    }
+
+    return $vars;
+}
+
+function envRaw($name, $dotenv = null)
 {
     $raw = getenv($name);
+    if ($raw !== false && $raw !== '') {
+        return $raw;
+    }
+
+    if (isset($_ENV[$name]) && $_ENV[$name] !== '') {
+        return (string) $_ENV[$name];
+    }
+
+    if (isset($_SERVER[$name]) && $_SERVER[$name] !== '') {
+        return (string) $_SERVER[$name];
+    }
+
+    if (is_array($dotenv) && isset($dotenv[$name]) && $dotenv[$name] !== '') {
+        return (string) $dotenv[$name];
+    }
+
+    return false;
+}
+
+function envInt($name, $default, $dotenv = null)
+{
+    $raw = envRaw($name, $dotenv);
     if ($raw === false || $raw === '') {
         return $default;
     }
@@ -75,9 +150,9 @@ function envInt($name, $default)
     return $v === false ? $default : $v;
 }
 
-function envCsv($name, $default = '')
+function envCsv($name, $default = '', $dotenv = null)
 {
-    $raw = getenv($name);
+    $raw = envRaw($name, $dotenv);
     if ($raw === false) {
         $raw = $default;
     }
