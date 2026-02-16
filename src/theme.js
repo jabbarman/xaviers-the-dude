@@ -64,3 +64,35 @@ export function addHudBacking(scene, width, height = 76) {
 
   return { strip, edge };
 }
+
+export function addCrtOverlay(scene, width, height, options = {}) {
+  const {
+    enabled = true,
+    scanlineAlpha = 0.12,
+    vignetteAlpha = 0.22,
+    depth = 970,
+  } = options;
+
+  if (!enabled) return null;
+
+  const overlay = scene.add.container(0, 0).setScrollFactor(0).setDepth(depth);
+
+  // Scanlines
+  const scanlines = scene.add.graphics();
+  scanlines.fillStyle(0x000000, scanlineAlpha);
+  for (let y = 0; y < height; y += 4) {
+    scanlines.fillRect(0, y, width, 2);
+  }
+
+  // Simple vignette using edge bands
+  const vignette = scene.add.graphics();
+  vignette.fillStyle(0x000000, vignetteAlpha);
+  const edge = Math.max(24, Math.round(Math.min(width, height) * 0.06));
+  vignette.fillRect(0, 0, width, edge); // top
+  vignette.fillRect(0, height - edge, width, edge); // bottom
+  vignette.fillRect(0, 0, edge, height); // left
+  vignette.fillRect(width - edge, 0, edge, height); // right
+
+  overlay.add([scanlines, vignette]);
+  return overlay;
+}

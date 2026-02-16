@@ -12,7 +12,7 @@ import { setupFullscreen } from '../ui/fullscreen.js';
 import { Controls } from '../systems/Controls.js';
 import { Spawner } from '../systems/Spawner.js';
 import { HUDSync } from '../systems/HUDSync.js';
-import { RETRO_PALETTE } from '../theme.js';
+import { RETRO_PALETTE, addCrtOverlay } from '../theme.js';
 
 export class SceneB extends Phaser.Scene {
   constructor() {
@@ -51,6 +51,22 @@ export class SceneB extends Phaser.Scene {
 
     this.audio.playForBackground(bgKey);
     this.add.image(WIDTH / 2, HEIGHT / 2, bgKey);
+
+    // Retro CRT-style overlay (toggle with ?crt=0)
+    const crtEnabled = (() => {
+      try {
+        const v = new URLSearchParams(window.location.search).get('crt');
+        return v !== '0' && v !== 'false' && v !== 'off';
+      } catch {
+        return true;
+      }
+    })();
+    this.crtOverlay = addCrtOverlay(this, WIDTH, HEIGHT, {
+      enabled: crtEnabled,
+      scanlineAlpha: 0.12,
+      vignetteAlpha: 0.22,
+      depth: 970,
+    });
 
     // Preload SFX
     this.sound.add('gameOver');
@@ -143,6 +159,7 @@ export class SceneB extends Phaser.Scene {
       this.tweens?.killAll?.();
       this.time?.removeAllEvents?.();
       this.input?.removeAllListeners?.();
+      this.crtOverlay?.destroy?.();
     } catch (e) {
       console.warn('Error during SceneB shutdown:', e);
     }
