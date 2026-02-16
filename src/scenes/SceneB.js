@@ -52,17 +52,9 @@ export class SceneB extends Phaser.Scene {
     this.audio.playForBackground(bgKey);
     this.add.image(WIDTH / 2, HEIGHT / 2, bgKey);
 
-    // Retro CRT-style overlay (toggle with ?crt=0)
-    const crtEnabled = (() => {
-      try {
-        const v = new URLSearchParams(window.location.search).get('crt');
-        return v !== '0' && v !== 'false' && v !== 'off';
-      } catch {
-        return true;
-      }
-    })();
+    // Retro CRT-style overlay
     this.crtOverlay = addCrtOverlay(this, WIDTH, HEIGHT, {
-      enabled: crtEnabled,
+      enabled: true,
       scanlineAlpha: 0.12,
       vignetteAlpha: 0.22,
       depth: 970,

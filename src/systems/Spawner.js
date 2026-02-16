@@ -4,6 +4,7 @@ import {
   STARS_BOUNCE_MIN,
   STARS_BOUNCE_MAX,
 } from '../config.js';
+import { state } from '../state.js';
 import { generatePlatformLayout } from './platformLayout.js';
 
 export class Spawner {
@@ -13,7 +14,7 @@ export class Spawner {
 
   spawnPlatforms(groundKey, variantIndex) {
     const platforms = this.scene.physics.add.staticGroup();
-    const layout = generatePlatformLayout(variantIndex);
+    const layout = generatePlatformLayout(variantIndex, state.layoutSeed);
 
     layout.platforms.forEach((platform) => {
       const sprite = platforms.create(platform.x, platform.y, groundKey);

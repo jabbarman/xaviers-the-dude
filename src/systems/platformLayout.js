@@ -10,7 +10,7 @@ const PLATFORM_HEIGHT = 32;
 const GROUND_Y = 568;
 const ELEVATED_PLATFORM_COUNT = 4;
 
-// Keep generation deterministic per level variant for easier debugging/replays.
+// Keep generation deterministic within a run, but vary between runs/reloads.
 const DEFAULT_SEED = 0xc0ffee;
 const MAX_GENERATION_ATTEMPTS = 60;
 
@@ -127,8 +127,9 @@ export function validatePlatformLayout(platforms) {
   return { ok: true };
 }
 
-export function generatePlatformLayout(variantIndex = 0) {
-  const seed = ((variantIndex + 1) * 0x9e3779b1) ^ DEFAULT_SEED;
+export function generatePlatformLayout(variantIndex = 0, runSeed = DEFAULT_SEED) {
+  const baseSeed = Number.isFinite(runSeed) ? (runSeed >>> 0) : DEFAULT_SEED;
+  const seed = ((variantIndex + 1) * 0x9e3779b1) ^ baseSeed;
   const rng = mulberry32(seed);
 
   for (let attempt = 0; attempt < MAX_GENERATION_ATTEMPTS; attempt += 1) {

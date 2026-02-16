@@ -11,6 +11,7 @@ export const state = {
   portalJump: false,
   gameOver: false,
   variantIndex: 0, // increments after each portal jump to alter SceneB variation
+  layoutSeed: (Date.now() >>> 0), // per-run seed for platform layout variety across reloads/runs
   player: null,
   stars: null,
   bombs: null,
@@ -31,6 +32,7 @@ export const state = {
     this.portalJump = false;
     this.gameOver = false;
     this.variantIndex = 0;
+    this.layoutSeed = (Date.now() >>> 0);
     // Clear runtime references to allow GC between runs
     this.player = null;
     this.stars = null;
