@@ -6,6 +6,7 @@ import {
   sanitizeInitials,
   normalizeScore,
 } from '../services/highscores.js';
+import { RETRO_PALETTE } from '../theme.js';
 
 export class SceneHighScore extends Phaser.Scene {
   constructor() {
@@ -42,6 +43,21 @@ export class SceneHighScore extends Phaser.Scene {
     this.scene.stop('UIScene');
     this._submissionInProgress = false;
     this._globalBoardLoaded = false;
+
+    const playMoveSfx = () => {
+      try {
+        this.sound.play('bounce', { volume: 0.12 });
+      } catch (_e) {
+        // ignore audio failures
+      }
+    };
+    const playSelectSfx = () => {
+      try {
+        this.sound.play('ping', { volume: 0.2 });
+      } catch (_e) {
+        // ignore audio failures
+      }
+    };
 
     // Layout constants to reduce crowding and split into panels
     const PANEL_SCALE = 0.6;
@@ -113,39 +129,47 @@ export class SceneHighScore extends Phaser.Scene {
     // Panel headers
     this.add
       .bitmapText(leftX, headerY - 25, 'arcade', 'LOCAL')
-      .setTint(0x00ffcc)
+      .setTint(RETRO_PALETTE.mint)
       .setScale(PANEL_SCALE);
     this.add
       .bitmapText(rightX, headerY - 25, 'arcade', 'GLOBAL')
-      .setTint(0x00ffcc)
+      .setTint(RETRO_PALETTE.mint)
       .setScale(PANEL_SCALE);
     this.add
       .bitmapText(leftX, headerY, 'arcade', 'RANK  SCORE  NAME')
-      .setTint(0xff00ff)
+      .setTint(RETRO_PALETTE.magenta)
       .setScale(PANEL_SCALE);
     this.add
       .bitmapText(rightX, headerY, 'arcade', 'RANK  SCORE  NAME')
-      .setTint(0xff00ff)
+      .setTint(RETRO_PALETTE.magenta)
       .setScale(PANEL_SCALE);
 
     // Global fallback status sits under the global header (compact)
-    this._globalStatusText = this.add.bitmapText(rightX, headerY + 18, 'arcade', '').setTint(0xffa500).setScale(0.5);
+    this._globalStatusText = this.add.bitmapText(rightX, headerY + 18, 'arcade', '').setTint(RETRO_PALETTE.amber).setScale(0.5);
     this._globalStatusText.visible = false;
 
     // Play Again affordance for clear navigation back to SceneA
     const centerX = this.cameras.main.centerX;
     const playAgain = this.add
       .bitmapText(centerX, 520, 'arcade', 'PLAY AGAIN  (ENTER)')
-      .setTint(0x00ff00)
+      .setTint(RETRO_PALETTE.lime)
       .setOrigin(0.5, 0);
     playAgain.setScale(PLAY_AGAIN_SCALE);
     playAgain.setInteractive();
+    playAgain.on('pointerover', playMoveSfx);
     playAgain.on('pointerup', () => {
+      playSelectSfx();
       state.reset();
       this.scene.start('SceneA');
     });
 
-    var colors = [0xff0000, 0xff8200, 0xffff00, 0x00ff00, 0x00bfff];
+    var colors = [
+      RETRO_PALETTE.red,
+      RETRO_PALETTE.orange,
+      RETRO_PALETTE.yellow,
+      RETRO_PALETTE.lime,
+      RETRO_PALETTE.azure,
+    ];
     var ranks = ['1ST', '2ND', '3RD', '4TH', '5TH'];
 
     // Keep references for dynamic updates (per board)
@@ -212,17 +236,17 @@ export class SceneHighScore extends Phaser.Scene {
       scene.saveHighScores(updatedHighScores);
 
       // Attempt global submission (best-effort)
-      scene.setGlobalStatus('Submitting to global board...', 0x00ffff);
+      scene.setGlobalStatus('Submitting to global board...', RETRO_PALETTE.cyan);
       try {
         await submitGlobalHighScore({
           initials: sanitizedName || name,
           score: runScore,
         });
-        scene.setGlobalStatus('Submitted to global board!', 0x00ff00);
+        scene.setGlobalStatus('Submitted to global board!', RETRO_PALETTE.lime);
       } catch (_e) {
         scene.setGlobalStatus(
           'Could not submit to global board—local score saved.',
-          0xff0000,
+          RETRO_PALETTE.red,
         );
       }
 
@@ -239,28 +263,33 @@ export class SceneHighScore extends Phaser.Scene {
           if (cursor.x > 0) {
             cursor.x--;
             block.x -= 52;
+            playMoveSfx();
           }
           break;
         case kc.RIGHT:
           if (cursor.x < 9) {
             cursor.x++;
             block.x += 52;
+            playMoveSfx();
           }
           break;
         case kc.UP:
           if (cursor.y > 0) {
             cursor.y--;
             block.y -= 64;
+            playMoveSfx();
           }
           break;
         case kc.DOWN:
           if (cursor.y < 2) {
             cursor.y++;
             block.y += 64;
+            playMoveSfx();
           }
           break;
         case kc.ENTER:
         case kc.SPACE:
+          playSelectSfx();
           if (!newHighScore) {
             // Allow quick restart when there is no new high score to enter
             state.reset();
@@ -311,6 +340,7 @@ export class SceneHighScore extends Phaser.Scene {
     input.on(
       'pointerup',
       function (pointer, x, y) {
+        playSelectSfx();
         var cx = Phaser.Math.Snap.Floor(x, 52, 0, true);
         var cy = Phaser.Math.Snap.Floor(y, 64, 0, true);
         var _char = chars[cy][cx]; // Renamed to _char
@@ -344,7 +374,7 @@ export class SceneHighScore extends Phaser.Scene {
     this.loadGlobalBoard(newHighScore, ranks, colors);
   }
 
-  setGlobalStatus(message, tint = 0x00ffff) {
+  setGlobalStatus(message, tint = RETRO_PALETTE.cyan) {
     if (!this._globalStatusText) return;
     this._globalStatusText.visible = !!message;
     this._globalStatusText.setText(message || '');
@@ -372,22 +402,22 @@ export class SceneHighScore extends Phaser.Scene {
   }
 
   async loadGlobalBoard(newHighScore, ranks, colors) {
-    this.setGlobalStatus('Loading global board...', 0xffa500);
+    this.setGlobalStatus('Loading global board...', RETRO_PALETTE.amber);
     try {
       const { entries } = await fetchGlobalHighScores();
       if (!entries || entries.length === 0) {
-        this.setGlobalStatus('Global board unavailable', 0xffa500);
+        this.setGlobalStatus('Global board unavailable', RETRO_PALETTE.amber);
         return;
       }
 
       this._globalBoardLoaded = true;
-      this.setGlobalStatus('', 0xffa500); // clear
+      this.setGlobalStatus('', RETRO_PALETTE.amber); // clear
 
       // Update global board results
       this.updateBoard(entries.slice(0, 5), 'global', ranks, colors);
     } catch (_e) {
       console.warn('Error loading global high scores:', _e);
-      this.setGlobalStatus('Global board unavailable', 0xffa500);
+      this.setGlobalStatus('Global board unavailable', RETRO_PALETTE.amber);
     }
   }
 }

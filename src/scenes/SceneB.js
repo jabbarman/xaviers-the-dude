@@ -12,6 +12,7 @@ import { setupFullscreen } from '../ui/fullscreen.js';
 import { Controls } from '../systems/Controls.js';
 import { Spawner } from '../systems/Spawner.js';
 import { HUDSync } from '../systems/HUDSync.js';
+import { RETRO_PALETTE } from '../theme.js';
 
 export class SceneB extends Phaser.Scene {
   constructor() {
@@ -26,6 +27,7 @@ export class SceneB extends Phaser.Scene {
 
   create() {
     this._endBound = false;
+    this._gameOverBlinkTween = null;
     this.input.enabled = true;
 
     // Initialize systems
@@ -43,8 +45,8 @@ export class SceneB extends Phaser.Scene {
       : state.variantIndex === 0
         ? 'sky'
         : BACKGROUND_SEQUENCE[
-        (state.variantIndex - 1 + BACKGROUND_SEQUENCE.length) %
-        BACKGROUND_SEQUENCE.length
+          (state.variantIndex - 1 + BACKGROUND_SEQUENCE.length) %
+            BACKGROUND_SEQUENCE.length
         ];
 
     this.audio.playForBackground(bgKey);
@@ -79,13 +81,19 @@ export class SceneB extends Phaser.Scene {
     // Physics
     this.setupPhysics();
 
-    this.gameOverText = this.add.text(
-      GAME_OVER_TEXT.x,
-      GAME_OVER_TEXT.y,
-      'Game Over',
-      { fontSize: GAME_OVER_TEXT.fontSize, fill: GAME_OVER_TEXT.fill },
-    );
-    this.gameOverText.setOrigin(0.5).setDepth(1000).setVisible(false);
+    this.gameOverText = this.add
+      .bitmapText(GAME_OVER_TEXT.x, GAME_OVER_TEXT.y - 20, 'arcade', 'GAME OVER', 38)
+      .setOrigin(0.5)
+      .setDepth(1000)
+      .setTint(RETRO_PALETTE.red)
+      .setVisible(false);
+
+    this.gameOverPrompt = this.add
+      .bitmapText(GAME_OVER_TEXT.x, GAME_OVER_TEXT.y + 30, 'arcade', 'PRESS ANY KEY', 16)
+      .setOrigin(0.5)
+      .setDepth(1000)
+      .setTint(RETRO_PALETTE.white)
+      .setVisible(false);
 
     // Cleanup
     this.events.once('shutdown', () => this.handleShutdown());
@@ -157,16 +165,34 @@ export class SceneB extends Phaser.Scene {
   handleGameOver() {
     try {
       this.audio?.stop();
-    } catch (e) { console.warn('Error stopping audio on game over:', e); }
+    } catch (e) {
+      console.warn('Error stopping audio on game over:', e);
+    }
+
     this.gameOverText.visible = true;
+    this.gameOverPrompt.visible = true;
+
+    if (!this._gameOverBlinkTween) {
+      this._gameOverBlinkTween = this.tweens.add({
+        targets: this.gameOverPrompt,
+        alpha: 0.25,
+        duration: 420,
+        yoyo: true,
+        repeat: -1,
+      });
+    }
 
     if (!this._endBound) {
       this._endBound = true;
       this.input.enabled = true;
-      this.input.once('pointerup', () => {
+
+      const finish = () => {
         this.hudSync.stopHUD();
         this.scene.start('SceneC');
-      });
+      };
+
+      this.input.once('pointerup', finish);
+      this.input.keyboard.once('keydown', finish);
     }
   }
 
@@ -174,7 +200,7 @@ export class SceneB extends Phaser.Scene {
     state.portalJump = false;
 
     if (state.bombs?.countActive(true) > 0) {
-      state.bombs.children.iterate(child => child.disableBody(true, true));
+      state.bombs.children.iterate((child) => child.disableBody(true, true));
     }
 
     state.lives += PORTAL_EXTRA_LIFE;

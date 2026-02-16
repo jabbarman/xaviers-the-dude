@@ -1,5 +1,5 @@
 import { state } from '../state.js';
-import { addHud } from '../theme.js';
+import { addHud, addHudBacking, RETRO_PALETTE } from '../theme.js';
 import {
   WIDTH,
   HEIGHT,
@@ -15,6 +15,8 @@ export class UIScene extends Phaser.Scene {
   }
 
   create() {
+    addHudBacking(this, WIDTH, 76);
+
     this.hiScoreText = addHud(this, 280, 10, 'HI SCORE: ' + state.hiScore);
     this.livesText = addHud(this, 10, 10, 'LIVES: ' + state.lives);
     this.waveText = addHud(this, 10, 30, 'WAVE : ' + state.wave);
@@ -38,7 +40,7 @@ export class UIScene extends Phaser.Scene {
     this._onWaveStart = (num) => {
       const banner = this.add
         .bitmapText(400, 300, 'arcade', 'WAVE ' + num, 24)
-        .setTint(0xffff00)
+        .setTint(RETRO_PALETTE.yellow)
         .setOrigin(0.5)
         .setDepth(1001);
       this.tweens.add({
