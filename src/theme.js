@@ -84,14 +84,36 @@ export function addCrtOverlay(scene, width, height, options = {}) {
     scanlines.fillRect(0, y, width, 2);
   }
 
-  // Simple vignette using edge bands
+  // Feathered vignette: layered bands for a soft gradient on all sides
   const vignette = scene.add.graphics();
-  vignette.fillStyle(0x000000, vignetteAlpha);
-  const edge = Math.max(24, Math.round(Math.min(width, height) * 0.06));
-  vignette.fillRect(0, 0, width, edge); // top
-  vignette.fillRect(0, height - edge, width, edge); // bottom
-  vignette.fillRect(0, 0, edge, height); // left
-  vignette.fillRect(width - edge, 0, edge, height); // right
+  const edgeX = Math.max(28, Math.round(width * 0.09));
+  const edgeY = Math.max(22, Math.round(height * 0.07));
+  const bands = 12;
+
+  for (let i = 0; i < bands; i += 1) {
+    const t = (i + 1) / bands;
+    // Stronger at outer edge, smoothly falling toward center
+    const falloff = Math.pow(1 - t, 1.5);
+
+    const bandW = Math.max(1, Math.round(edgeX / bands));
+    const bandH = Math.max(1, Math.round(edgeY / bands));
+
+    // Slightly lighter on top/bottom to preserve HUD readability
+    const alphaSide = vignetteAlpha * falloff;
+    const alphaTopBottom = vignetteAlpha * 0.75 * falloff;
+
+    // Left / right bands
+    const xInset = i * bandW;
+    vignette.fillStyle(0x000000, alphaSide);
+    vignette.fillRect(xInset, 0, bandW, height);
+    vignette.fillRect(width - xInset - bandW, 0, bandW, height);
+
+    // Top / bottom bands
+    const yInset = i * bandH;
+    vignette.fillStyle(0x000000, alphaTopBottom);
+    vignette.fillRect(0, yInset, width, bandH);
+    vignette.fillRect(0, height - yInset - bandH, width, bandH);
+  }
 
   overlay.add([scanlines, vignette]);
   return overlay;
