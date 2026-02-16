@@ -10,7 +10,8 @@
   "scripts": {
     "start": "http-server -o",
     "version": "node scripts/fetch-version.js",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "npm run test:security",
+    "test:security": "node scripts/test-highscore-security.js",
     "mock:highscores": "node scripts/mock-highscores.js",
     "lint": "eslint .",
     "validate:platforms": "node scripts/validate-platform-layouts.js",

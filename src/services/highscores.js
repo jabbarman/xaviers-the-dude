@@ -72,6 +72,74 @@ function coerceEntries(raw, limit) {
     .slice(0, limit);
 }
 
+function toHex(buffer) {
+  const bytes = new Uint8Array(buffer);
+  let out = '';
+  for (let i = 0; i < bytes.length; i += 1) {
+    out += bytes[i].toString(16).padStart(2, '0');
+  }
+  return out;
+}
+
+function randomNonce() {
+  const bytes = new Uint8Array(18);
+  if (globalThis.crypto?.getRandomValues) {
+    globalThis.crypto.getRandomValues(bytes);
+  } else {
+    for (let i = 0; i < bytes.length; i += 1) {
+      bytes[i] = Math.floor(Math.random() * 256);
+    }
+  }
+  let binary = '';
+  bytes.forEach((b) => {
+    binary += String.fromCharCode(b);
+  });
+  return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
+}
+
+async function hmacSha256Hex(key, payload) {
+  const enc = new TextEncoder();
+
+  if (globalThis.crypto?.subtle) {
+    const cryptoKey = await globalThis.crypto.subtle.importKey(
+      'raw',
+      enc.encode(key),
+      { name: 'HMAC', hash: 'SHA-256' },
+      false,
+      ['sign'],
+    );
+    const sig = await globalThis.crypto.subtle.sign(
+      'HMAC',
+      cryptoKey,
+      enc.encode(payload),
+    );
+    return toHex(sig);
+  }
+
+  // Fallback for very old environments is intentionally unsupported.
+  throw new Error('WebCrypto HMAC not available in this browser');
+}
+
+async function fetchSubmitChallenge(baseUrl) {
+  const separator = baseUrl.includes('?') ? '&' : '?';
+  const url = `${baseUrl}${separator}action=challenge&_t=${now()}`;
+  const res = await fetchWithTimeout(url, {
+    method: 'GET',
+    headers: { Accept: 'application/json' },
+  });
+
+  if (!res.ok) {
+    throw new Error(`Challenge failed: ${res.status}`);
+  }
+
+  const payload = await res.json();
+  if (!payload?.sessionId || !payload?.submitToken) {
+    throw new Error('Challenge payload missing required fields');
+  }
+
+  return payload;
+}
+
 export async function fetchGlobalHighScores({
   baseUrl = HIGHSCORE_API_BASE,
   limit = HIGHSCORE_LIMIT,
@@ -107,31 +175,76 @@ export async function submitGlobalHighScore({
   baseUrl = HIGHSCORE_API_BASE,
   initials,
   score,
+  metadata = null,
 }) {
   const safeInitials = sanitizeInitials(initials);
   const safeScore = normalizeScore(score);
+
   try {
+    const challenge = await fetchSubmitChallenge(baseUrl);
+    const timestamp = Math.floor(now() / 1000);
+    const nonce = randomNonce();
+    const metadataCanonical = metadata
+      ? JSON.stringify(
+          Object.keys(metadata)
+            .sort()
+            .reduce((acc, k) => {
+              acc[k] = metadata[k];
+              return acc;
+            }, {}),
+        )
+      : '';
+
+    const metaHashBuffer = await globalThis.crypto.subtle.digest(
+      'SHA-256',
+      new TextEncoder().encode(metadataCanonical),
+    );
+    const metaHash = toHex(metaHashBuffer);
+
+    const stringToSign = [
+      challenge.sessionId,
+      String(timestamp),
+      nonce,
+      safeInitials,
+      String(safeScore),
+      metaHash,
+    ].join('|');
+
+    const signature = await hmacSha256Hex(challenge.submitToken, stringToSign);
+
+    const payload = {
+      initials: safeInitials,
+      score: safeScore,
+      sessionId: challenge.sessionId,
+      timestamp,
+      nonce,
+      signature,
+    };
+
+    if (metadata && typeof metadata === 'object') {
+      payload.metadata = metadata;
+    }
+
     const res = await fetchWithTimeout(baseUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         Accept: 'application/json',
       },
-      body: JSON.stringify({ initials: safeInitials, score: safeScore }),
+      body: JSON.stringify(payload),
     });
 
     if (!res.ok) {
       let detail = '';
       try {
-        const payload = await res.json();
-        detail = payload?.error || JSON.stringify(payload);
+        const body = await res.json();
+        detail = body?.error || JSON.stringify(body);
       } catch (_e) {
         // ignore parse errors
       }
       throw new Error(`Submit failed: ${res.status} ${detail}`);
     }
 
-    // Invalidate cache so the next fetch reflects the new score.
     cache.entries = null;
     cache.timestamp = 0;
     return true;

@@ -2,6 +2,14 @@
 .idea
 /node_modules/
 
+# Environment / secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.secret
+
 # Agent and development-specific files
 .gemini/
 .junie/
@@ -9,3 +17,4 @@ docs/
 GEMINI.md
 test-*.html
 test-*.js
+!scripts/test-highscore-security.js

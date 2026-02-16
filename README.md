@@ -26,18 +26,43 @@ A JavaScript game built with the Phaser 3 framework. This game features "The Dud
 
 ## Global High Scores
 
-The game supports a global high score board. For local development, you can run a mock server.
+The game supports a global high score board.
 
-1.  **Start the mock server** in a separate terminal:
-    ```sh
-    npm run mock:highscores
-    ```
-    This will run on `http://localhost:3000`.
+### Local development options
 
-2.  **Start the game** and append the following query parameter to the URL in your browser to point the game at your mock server:
-    `?hsBase=http://localhost:3000/api/highscores`
+**A) Secure PHP API (recommended):**
 
-If the service is unreachable, the game gracefully falls back to using local storage for high scores.
+1. Set env vars using `.env.example` as a template.
+2. Start PHP in project root:
+   ```sh
+   HIGHSCORE_ALLOWED_ORIGINS=http://localhost:8080 php -S 127.0.0.1:8123 -t .
+   ```
+3. Start the game and append:
+   `?hsBase=http://127.0.0.1:8123/api/index.php`
+
+**B) Mock server (quick/local only):**
+
+1. Start mock server in a separate terminal:
+   ```sh
+   npm run mock:highscores
+   ```
+2. Point game to:
+   `?hsBase=http://localhost:3000/api/highscores`
+
+If the service is unreachable, the game gracefully falls back to local storage.
+
+### Security hardening
+
+The PHP API includes baseline hardening for a public client:
+- strict schema validation for submit payloads
+- short-lived challenge/session token for submit
+- HMAC signature verification
+- timestamp freshness + nonce replay protection
+- per-IP rate limiting
+- CORS allowlist enforcement via env var
+- conservative score plausibility checks
+
+See `api/SECURITY.md` for design notes, env vars, setup, and caveats.
 
 ## Development Notes
 
