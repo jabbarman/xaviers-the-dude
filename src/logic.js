@@ -22,7 +22,7 @@ export function collectStar(player, star) {
     this.sound.play('ping', { volume: 0.25 });
   } catch (e) { console.warn('Error playing ping sound:', e); }
 
-  // Tiny retro pickup pop + subtle flash feedback (purely cosmetic)
+  // Tiny retro pickup pop (purely cosmetic)
   try {
     const pop = this.add.image(star.x, star.y, 'star').setDepth(950);
     pop.setScale(star.scaleX || 1, star.scaleY || 1);
@@ -35,7 +35,6 @@ export function collectStar(player, star) {
       ease: 'Quad.Out',
       onComplete: () => pop.destroy(),
     });
-    this.cameras?.main?.flash?.(45, 255, 255, 255, false);
   } catch (e) {
     console.warn('Error showing star pickup pop effect:', e);
   }
