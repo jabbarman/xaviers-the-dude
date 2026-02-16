@@ -13,6 +13,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "mock:highscores": "node scripts/mock-highscores.js",
     "lint": "eslint .",
+    "validate:platforms": "node scripts/validate-platform-layouts.js",
     "format": "prettier --write ."
   },
   "dependencies": {
