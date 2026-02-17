@@ -36,6 +36,12 @@ const SLOT_DY_MAX = MAX_UPWARD_RISE - 20;
 const SLOT_MIN_OVERLAP = 220;
 const SLOT_MAX_CENTER_OFFSET = 96;
 
+// Strict side-approach anti-choke checks for elevated platforms.
+const SIDE_APPROACH_DEPTH = PLAYER_BODY_WIDTH + 28;
+const SIDE_APPROACH_EDGE_BUFFER = PLAYER_HALF_WIDTH + 4;
+const SIDE_SCAN_ABOVE = 120;
+const SIDE_SCAN_BELOW = 120;
+
 // Keep elevated platforms away from screen edges so the player can always approach from either side.
 const EDGE_ENTRY_MARGIN = PLAYER_BODY_WIDTH; // at least one sprite width clearance to the screen edge
 const X_MIN = PLATFORM_WIDTH / 2 + EDGE_ENTRY_MARGIN;
@@ -128,6 +134,58 @@ function findVerticalSlotTrap(platforms) {
   return null;
 }
 
+function sideCorridorRange(platform, side) {
+  const rect = platformRect(platform);
+  if (side === 'left') {
+    return {
+      left: rect.left - SIDE_APPROACH_DEPTH,
+      right: rect.left + SIDE_APPROACH_EDGE_BUFFER,
+    };
+  }
+
+  return {
+    left: rect.right - SIDE_APPROACH_EDGE_BUFFER,
+    right: rect.right + SIDE_APPROACH_DEPTH,
+  };
+}
+
+function hasHorizontalOverlap(range, platform) {
+  const rect = platformRect(platform);
+  return rect.right > range.left && rect.left < range.right;
+}
+
+function findSideApproachTrap(platforms) {
+  for (let i = 0; i < platforms.length; i += 1) {
+    const platform = platforms[i];
+    for (const side of ['left', 'right']) {
+      const range = sideCorridorRange(platform, side);
+      let blockedAbove = false;
+      let blockedBelow = false;
+
+      for (let j = 0; j < platforms.length; j += 1) {
+        if (i === j) continue;
+        const neighbor = platforms[j];
+        if (!hasHorizontalOverlap(range, neighbor)) continue;
+
+        const dy = neighbor.y - platform.y;
+        if (dy < 0 && Math.abs(dy) <= SIDE_SCAN_ABOVE) blockedAbove = true;
+        if (dy > 0 && dy <= SIDE_SCAN_BELOW) blockedBelow = true;
+
+        if (blockedAbove && blockedBelow) {
+          return {
+            i,
+            side,
+            above: SIDE_SCAN_ABOVE,
+            below: SIDE_SCAN_BELOW,
+          };
+        }
+      }
+    }
+  }
+
+  return null;
+}
+
 function adjustCandidateAgainst(platform, candidate) {
   const source = { ...candidate };
   const gap = edgeGap(platform, source);
@@ -213,6 +271,13 @@ export function validatePlatformLayout(platforms) {
   }
 
   const elevated = platforms.slice(1);
+  const sideApproachTrap = findSideApproachTrap(elevated);
+  if (sideApproachTrap) {
+    return {
+      ok: false,
+      reason: `blocked ${sideApproachTrap.side} approach on elevated platform ${sideApproachTrap.i} (above<=${sideApproachTrap.above}, below<=${sideApproachTrap.below})`,
+    };
+  }
   const highest = elevated.reduce(
     (min, p) => (p.y < min.y ? p : min),
     elevated[0],
@@ -292,6 +357,10 @@ export function generatePlatformLayout(variantIndex = 0, runSeed = DEFAULT_SEED)
           slotDyMax: SLOT_DY_MAX,
           slotMinOverlap: SLOT_MIN_OVERLAP,
           slotMaxCenterOffset: SLOT_MAX_CENTER_OFFSET,
+          sideApproachDepth: SIDE_APPROACH_DEPTH,
+          sideApproachEdgeBuffer: SIDE_APPROACH_EDGE_BUFFER,
+          sideScanAbove: SIDE_SCAN_ABOVE,
+          sideScanBelow: SIDE_SCAN_BELOW,
         },
       };
     }
@@ -309,28 +378,28 @@ export function generatePlatformLayout(variantIndex = 0, runSeed = DEFAULT_SEED)
         scaleX: 2,
       },
       {
-        x: 620,
+        x: 555,
         y: 440,
         width: PLATFORM_WIDTH,
         height: PLATFORM_HEIGHT,
         scaleX: 1,
       },
       {
-        x: 300,
+        x: 439,
         y: 350,
         width: PLATFORM_WIDTH,
         height: PLATFORM_HEIGHT,
         scaleX: 1,
       },
       {
-        x: 520,
+        x: 338,
         y: 270,
         width: PLATFORM_WIDTH,
         height: PLATFORM_HEIGHT,
         scaleX: 1,
       },
       {
-        x: 220,
+        x: 241,
         y: 190,
         width: PLATFORM_WIDTH,
         height: PLATFORM_HEIGHT,
@@ -352,6 +421,10 @@ export function generatePlatformLayout(variantIndex = 0, runSeed = DEFAULT_SEED)
       slotDyMax: SLOT_DY_MAX,
       slotMinOverlap: SLOT_MIN_OVERLAP,
       slotMaxCenterOffset: SLOT_MAX_CENTER_OFFSET,
+      sideApproachDepth: SIDE_APPROACH_DEPTH,
+      sideApproachEdgeBuffer: SIDE_APPROACH_EDGE_BUFFER,
+      sideScanAbove: SIDE_SCAN_ABOVE,
+      sideScanBelow: SIDE_SCAN_BELOW,
     },
   };
 }

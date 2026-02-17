@@ -21,8 +21,8 @@ for (let variantIndex = 0; variantIndex < runCount; variantIndex += 1) {
     failures.push({ variantIndex, reason: validation.reason });
   }
 
-  // Fallback uses known staircase shape and a fixed first elevated x=620.
-  if (layout.platforms[1]?.x === 620 && layout.platforms[1]?.y === 440) {
+  // Fallback uses known staircase shape and a fixed first elevated x=555.
+  if (layout.platforms[1]?.x === 555 && layout.platforms[1]?.y === 440) {
     fallbackCount += 1;
   }
 }
