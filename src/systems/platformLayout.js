@@ -29,9 +29,8 @@ const MAX_EDGE_GAP_DOWNWARD = 260;
 const PLAYER_BODY_WIDTH = 32; // from dude frameWidth (default Arcade body width)
 const PLAYER_BODY_HEIGHT = 48; // from dude frameHeight (default Arcade body height)
 const PLAYER_HALF_WIDTH = PLAYER_BODY_WIDTH / 2;
-const TRAVERSAL_CLEARANCE_X = 14;
-const MIN_TRAVERSAL_GAP = PLAYER_BODY_WIDTH + TRAVERSAL_CLEARANCE_X; // 46px
-const CORRIDOR_Y_WINDOW = 150;
+const MIN_TRAVERSAL_GAP = PLAYER_BODY_WIDTH + 32; // 64px hard minimum for reliable traversal
+
 const SLOT_DY_MIN = PLAYER_BODY_HEIGHT + 8;
 const SLOT_DY_MAX = MAX_UPWARD_RISE - 20;
 const SLOT_MIN_OVERLAP = 220;
@@ -97,7 +96,6 @@ function findNarrowCorridor(platforms) {
       const a = platforms[i];
       const b = platforms[j];
       const dy = Math.abs(a.y - b.y);
-      if (dy > CORRIDOR_Y_WINDOW) continue;
 
       const gap = edgeGap(a, b);
       if (gap > 0 && gap < MIN_TRAVERSAL_GAP) {
@@ -129,9 +127,6 @@ function findVerticalSlotTrap(platforms) {
 }
 
 function adjustCandidateAgainst(platform, candidate) {
-  const dy = Math.abs(platform.y - candidate.y);
-  if (dy > CORRIDOR_Y_WINDOW) return candidate;
-
   const source = { ...candidate };
   const gap = edgeGap(platform, source);
   if (gap > 0 && gap < MIN_TRAVERSAL_GAP) {
@@ -291,7 +286,6 @@ export function generatePlatformLayout(variantIndex = 0, runSeed = DEFAULT_SEED)
           playerBodyWidth: PLAYER_BODY_WIDTH,
           playerBodyHeight: PLAYER_BODY_HEIGHT,
           minTraversalGap: MIN_TRAVERSAL_GAP,
-          corridorYWindow: CORRIDOR_Y_WINDOW,
           slotDyMin: SLOT_DY_MIN,
           slotDyMax: SLOT_DY_MAX,
           slotMinOverlap: SLOT_MIN_OVERLAP,
@@ -352,7 +346,6 @@ export function generatePlatformLayout(variantIndex = 0, runSeed = DEFAULT_SEED)
       playerBodyWidth: PLAYER_BODY_WIDTH,
       playerBodyHeight: PLAYER_BODY_HEIGHT,
       minTraversalGap: MIN_TRAVERSAL_GAP,
-      corridorYWindow: CORRIDOR_Y_WINDOW,
       slotDyMin: SLOT_DY_MIN,
       slotDyMax: SLOT_DY_MAX,
       slotMinOverlap: SLOT_MIN_OVERLAP,
