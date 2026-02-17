@@ -12,7 +12,7 @@ const ELEVATED_PLATFORM_COUNT = 4;
 
 // Keep generation deterministic within a run, but vary between runs/reloads.
 const DEFAULT_SEED = 0xc0ffee;
-const MAX_GENERATION_ATTEMPTS = 60;
+const MAX_GENERATION_ATTEMPTS = 140;
 
 // Physics-derived envelope + safety margins.
 const GRAVITY_Y = 300;
@@ -37,10 +37,11 @@ const SLOT_MIN_OVERLAP = 220;
 const SLOT_MAX_CENTER_OFFSET = 96;
 
 // Strict side-approach anti-choke checks for elevated platforms.
-const SIDE_APPROACH_DEPTH = PLAYER_BODY_WIDTH + 28;
-const SIDE_APPROACH_EDGE_BUFFER = PLAYER_HALF_WIDTH + 4;
-const SIDE_SCAN_ABOVE = 120;
-const SIDE_SCAN_BELOW = 120;
+const SIDE_APPROACH_DEPTH = PLAYER_BODY_WIDTH + 108; // wider lane probe to catch near-adjacent choke geometry
+const SIDE_APPROACH_EDGE_BUFFER = PLAYER_HALF_WIDTH + 8;
+const SIDE_SCAN_ABOVE = 180;
+const SIDE_SCAN_BELOW = 180;
+
 
 // Keep elevated platforms away from screen edges so the player can always approach from either side.
 const EDGE_ENTRY_MARGIN = PLAYER_BODY_WIDTH; // at least one sprite width clearance to the screen edge
