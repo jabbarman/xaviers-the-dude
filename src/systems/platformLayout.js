@@ -25,6 +25,18 @@ const MAX_EDGE_GAP_FLAT = 220;
 const MAX_EDGE_GAP_AT_MAX_RISE = 120;
 const MAX_EDGE_GAP_DOWNWARD = 260;
 
+// Player-space traversability constraints (gameplay-first anti-trap tuning).
+const PLAYER_BODY_WIDTH = 32; // from dude frameWidth (default Arcade body width)
+const PLAYER_BODY_HEIGHT = 48; // from dude frameHeight (default Arcade body height)
+const PLAYER_HALF_WIDTH = PLAYER_BODY_WIDTH / 2;
+const TRAVERSAL_CLEARANCE_X = 14;
+const MIN_TRAVERSAL_GAP = PLAYER_BODY_WIDTH + TRAVERSAL_CLEARANCE_X; // 46px
+const CORRIDOR_Y_WINDOW = 150;
+const SLOT_DY_MIN = PLAYER_BODY_HEIGHT + 8;
+const SLOT_DY_MAX = MAX_UPWARD_RISE - 20;
+const SLOT_MIN_OVERLAP = 220;
+const SLOT_MAX_CENTER_OFFSET = 96;
+
 const X_MIN = PLATFORM_WIDTH / 2;
 const X_MAX = WIDTH - PLATFORM_WIDTH / 2;
 const Y_BANDS = [
@@ -65,12 +77,84 @@ function edgeGap(source, target) {
   return 0;
 }
 
+function overlapX(source, target) {
+  const a = platformRect(source);
+  const b = platformRect(target);
+  return Math.max(0, Math.min(a.right, b.right) - Math.max(a.left, b.left));
+}
+
 function maxReachableEdgeGapForRise(rise) {
   if (rise <= 0) return MAX_EDGE_GAP_FLAT;
   const t = clamp(rise / MAX_UPWARD_RISE, 0, 1);
   return Math.floor(
     MAX_EDGE_GAP_FLAT - (MAX_EDGE_GAP_FLAT - MAX_EDGE_GAP_AT_MAX_RISE) * t,
   );
+}
+
+function findNarrowCorridor(platforms) {
+  for (let i = 0; i < platforms.length; i += 1) {
+    for (let j = i + 1; j < platforms.length; j += 1) {
+      const a = platforms[i];
+      const b = platforms[j];
+      const dy = Math.abs(a.y - b.y);
+      if (dy > CORRIDOR_Y_WINDOW) continue;
+
+      const gap = edgeGap(a, b);
+      if (gap > 0 && gap < MIN_TRAVERSAL_GAP) {
+        return { i, j, gap, dy };
+      }
+    }
+  }
+  return null;
+}
+
+function findVerticalSlotTrap(platforms) {
+  for (let i = 0; i < platforms.length; i += 1) {
+    for (let j = i + 1; j < platforms.length; j += 1) {
+      const a = platforms[i];
+      const b = platforms[j];
+      const dy = Math.abs(a.y - b.y);
+      if (dy < SLOT_DY_MIN || dy > SLOT_DY_MAX) continue;
+
+      const shared = overlapX(a, b);
+      if (shared < SLOT_MIN_OVERLAP) continue;
+
+      const dx = Math.abs(a.x - b.x);
+      if (dx <= SLOT_MAX_CENTER_OFFSET) {
+        return { i, j, dy, shared, dx };
+      }
+    }
+  }
+  return null;
+}
+
+function adjustCandidateAgainst(platform, candidate) {
+  const dy = Math.abs(platform.y - candidate.y);
+  if (dy > CORRIDOR_Y_WINDOW) return candidate;
+
+  const source = { ...candidate };
+  const gap = edgeGap(platform, source);
+  if (gap > 0 && gap < MIN_TRAVERSAL_GAP) {
+    const shift = MIN_TRAVERSAL_GAP - gap;
+    const direction = source.x >= platform.x ? 1 : -1;
+    source.x = clamp(source.x + direction * shift, X_MIN, X_MAX);
+  }
+
+  const overlap = overlapX(platform, source);
+  const slotDy = Math.abs(platform.y - source.y);
+  const centerDx = Math.abs(platform.x - source.x);
+  if (
+    slotDy >= SLOT_DY_MIN &&
+    slotDy <= SLOT_DY_MAX &&
+    overlap >= SLOT_MIN_OVERLAP &&
+    centerDx <= SLOT_MAX_CENTER_OFFSET
+  ) {
+    const stagger = SLOT_MAX_CENTER_OFFSET - centerDx + PLAYER_HALF_WIDTH;
+    const direction = source.x >= platform.x ? 1 : -1;
+    source.x = clamp(source.x + direction * stagger, X_MIN, X_MAX);
+  }
+
+  return source;
 }
 
 export function canJumpBetween(source, target) {
@@ -115,6 +199,22 @@ export function validatePlatformLayout(platforms) {
     };
   }
 
+  const narrowCorridor = findNarrowCorridor(platforms.slice(1));
+  if (narrowCorridor) {
+    return {
+      ok: false,
+      reason: `narrow corridor between platforms ${narrowCorridor.i}/${narrowCorridor.j} (gap=${narrowCorridor.gap})`,
+    };
+  }
+
+  const slotTrap = findVerticalSlotTrap(platforms.slice(1));
+  if (slotTrap) {
+    return {
+      ok: false,
+      reason: `vertical slot trap between platforms ${slotTrap.i}/${slotTrap.j} (dy=${slotTrap.dy}, overlap=${slotTrap.shared})`,
+    };
+  }
+
   const elevated = platforms.slice(1);
   const highest = elevated.reduce(
     (min, p) => (p.y < min.y ? p : min),
@@ -152,20 +252,27 @@ export function generatePlatformLayout(variantIndex = 0, runSeed = DEFAULT_SEED)
       const drift = Math.floor((rng() * 2 - 1) * 260);
       const proposedX = clamp(anchorX + drift, X_MIN, X_MAX);
       const spreadBoost = i % 2 === 0 ? -1 : 1;
-      const x = clamp(
-        proposedX + spreadBoost * Math.floor((rng() * 2 - 1) * 90),
-        X_MIN,
-        X_MAX,
-      );
-
-      platforms.push({
-        x,
+      let candidate = {
+        x: clamp(
+          proposedX + spreadBoost * Math.floor((rng() * 2 - 1) * 90),
+          X_MIN,
+          X_MAX,
+        ),
         y,
         width: PLATFORM_WIDTH,
         height: PLATFORM_HEIGHT,
         scaleX: 1,
-      });
-      anchorX = x;
+      };
+
+      // Pre-emptively avoid tiny corridors and near-overlap slot traps.
+      for (let pass = 0; pass < 2; pass += 1) {
+        for (let j = 1; j < platforms.length; j += 1) {
+          candidate = adjustCandidateAgainst(platforms[j], candidate);
+        }
+      }
+
+      platforms.push(candidate);
+      anchorX = candidate.x;
     }
 
     const validation = validatePlatformLayout(platforms);
@@ -181,6 +288,14 @@ export function generatePlatformLayout(variantIndex = 0, runSeed = DEFAULT_SEED)
           maxEdgeGapDownward: MAX_EDGE_GAP_DOWNWARD,
           theoreticalRise: Math.floor(JUMP_RISE_THEORETICAL),
           playerSpeedX: PLAYER_SPEED_X,
+          playerBodyWidth: PLAYER_BODY_WIDTH,
+          playerBodyHeight: PLAYER_BODY_HEIGHT,
+          minTraversalGap: MIN_TRAVERSAL_GAP,
+          corridorYWindow: CORRIDOR_Y_WINDOW,
+          slotDyMin: SLOT_DY_MIN,
+          slotDyMax: SLOT_DY_MAX,
+          slotMinOverlap: SLOT_MIN_OVERLAP,
+          slotMaxCenterOffset: SLOT_MAX_CENTER_OFFSET,
         },
       };
     }
@@ -234,6 +349,14 @@ export function generatePlatformLayout(variantIndex = 0, runSeed = DEFAULT_SEED)
       maxEdgeGapDownward: MAX_EDGE_GAP_DOWNWARD,
       theoreticalRise: Math.floor(JUMP_RISE_THEORETICAL),
       playerSpeedX: PLAYER_SPEED_X,
+      playerBodyWidth: PLAYER_BODY_WIDTH,
+      playerBodyHeight: PLAYER_BODY_HEIGHT,
+      minTraversalGap: MIN_TRAVERSAL_GAP,
+      corridorYWindow: CORRIDOR_Y_WINDOW,
+      slotDyMin: SLOT_DY_MIN,
+      slotDyMax: SLOT_DY_MAX,
+      slotMinOverlap: SLOT_MIN_OVERLAP,
+      slotMaxCenterOffset: SLOT_MAX_CENTER_OFFSET,
     },
   };
 }

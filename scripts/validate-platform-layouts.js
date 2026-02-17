@@ -3,7 +3,7 @@ import {
   validatePlatformLayout,
 } from '../src/systems/platformLayout.js';
 
-const runCount = 2000;
+const runCount = 5000;
 let passed = 0;
 let failed = 0;
 let fallbackCount = 0;
