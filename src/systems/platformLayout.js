@@ -36,8 +36,10 @@ const SLOT_DY_MAX = MAX_UPWARD_RISE - 20;
 const SLOT_MIN_OVERLAP = 220;
 const SLOT_MAX_CENTER_OFFSET = 96;
 
-const X_MIN = PLATFORM_WIDTH / 2;
-const X_MAX = WIDTH - PLATFORM_WIDTH / 2;
+// Keep elevated platforms away from screen edges so the player can always approach from either side.
+const EDGE_ENTRY_MARGIN = PLAYER_BODY_WIDTH; // at least one sprite width clearance to the screen edge
+const X_MIN = PLATFORM_WIDTH / 2 + EDGE_ENTRY_MARGIN;
+const X_MAX = WIDTH - PLATFORM_WIDTH / 2 - EDGE_ENTRY_MARGIN;
 const Y_BANDS = [
   { base: 460, jitter: 22 },
   { base: 370, jitter: 28 },
