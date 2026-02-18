@@ -26,9 +26,11 @@ export const GAME_OVER_TEXT = {
   fill: '#000',
 };
 
-// Moving platform phase-1/2 tuning (platform #2 only).
+// Moving platform phase tuning.
 export const MOVING_PLATFORM = {
   enabled: true,
+  // Layout index to move: 0=ground, 1=first elevated, 2=second elevated, ...
+  movingPlatformIndex: 2,
   mode: 'wrap', // supported: 'wrap', 'bounce'
   speedMin: 30,
   speedMax: 52,

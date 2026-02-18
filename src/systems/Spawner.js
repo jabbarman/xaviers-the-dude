@@ -23,8 +23,8 @@ export class Spawner {
     const layout = generatePlatformLayout(variantIndex, state.layoutSeed);
 
     layout.platforms.forEach((platform, index) => {
-      // Platform #2 (index 1) is moving in phase 1/2.
-      if (MOVING_PLATFORM.enabled && index === 1) {
+      // Configurable moving platform index (default: second elevated = index 2).
+      if (MOVING_PLATFORM.enabled && index === MOVING_PLATFORM.movingPlatformIndex) {
         const sprite = movingPlatforms.create(platform.x, platform.y, groundKey);
         if (platform.scaleX && platform.scaleX !== 1) {
           sprite.setScale(platform.scaleX, 1);

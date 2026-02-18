@@ -215,29 +215,32 @@ function adjustCandidateAgainst(platform, candidate) {
 }
 
 function hasConservativePathForMovingPlatform(platforms) {
-  if (!MOVING_PLATFORM.enabled || !platforms[1]) return true;
+  if (!MOVING_PLATFORM.enabled) return true;
 
-  const moving = platforms[1];
-  const ground = platforms[0];
-
-  if (!canJumpBetween(ground, moving)) {
-    return false;
-  }
+  const movingIndex = Number.isInteger(MOVING_PLATFORM.movingPlatformIndex)
+    ? MOVING_PLATFORM.movingPlatformIndex
+    : 2;
+  const moving = platforms[movingIndex];
+  if (!moving || movingIndex === 0) return true;
 
   const conservativeGap = MOVING_PLATFORM.conservativeJumpGap;
-  let hasNearbyElevated = false;
+  let hasNearbyPath = false;
 
-  for (let i = 2; i < platforms.length; i += 1) {
+  for (let i = 0; i < platforms.length; i += 1) {
+    if (i === movingIndex) continue;
     const other = platforms[i];
     const gap = edgeGap(moving, other);
     const dy = Math.abs(other.y - moving.y);
-    if (gap <= conservativeGap && dy <= MAX_UPWARD_RISE) {
-      hasNearbyElevated = true;
+    if (gap > conservativeGap) continue;
+
+    // Require at least one practical connection near the moving platform.
+    if (dy <= MAX_UPWARD_RISE && (canJumpBetween(other, moving) || canJumpBetween(moving, other))) {
+      hasNearbyPath = true;
       break;
     }
   }
 
-  return hasNearbyElevated;
+  return hasNearbyPath;
 }
 
 export function canJumpBetween(source, target) {
