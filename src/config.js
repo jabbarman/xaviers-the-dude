@@ -31,6 +31,8 @@ export const MOVING_PLATFORM = {
   enabled: true,
   // Layout index to move: 0=ground, 1=first elevated, 2=second elevated, ...
   movingPlatformIndex: 2,
+  // Preferred moving set: second + third elevated platforms.
+  movingPlatformIndexes: [2, 3],
   mode: 'wrap', // supported: 'wrap', 'bounce'
   speedMin: 30,
   speedMax: 52,

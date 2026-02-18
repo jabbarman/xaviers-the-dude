@@ -22,9 +22,14 @@ export class Spawner {
     });
     const layout = generatePlatformLayout(variantIndex, state.layoutSeed);
 
+    const configuredMoving = Array.isArray(MOVING_PLATFORM.movingPlatformIndexes)
+      ? MOVING_PLATFORM.movingPlatformIndexes
+      : [MOVING_PLATFORM.movingPlatformIndex];
+    const movingSet = new Set(configuredMoving.filter((i) => Number.isInteger(i)));
+    const baseVelocity = movingPlatformVelocity(state.layoutSeed, variantIndex);
+
     layout.platforms.forEach((platform, index) => {
-      // Configurable moving platform index (default: second elevated = index 2).
-      if (MOVING_PLATFORM.enabled && index === MOVING_PLATFORM.movingPlatformIndex) {
+      if (MOVING_PLATFORM.enabled && movingSet.has(index)) {
         const sprite = movingPlatforms.create(platform.x, platform.y, groundKey);
         if (platform.scaleX && platform.scaleX !== 1) {
           sprite.setScale(platform.scaleX, 1);
@@ -33,9 +38,13 @@ export class Spawner {
         sprite.body.allowGravity = false;
         sprite.body.immovable = true;
         sprite.body.moves = false;
+        const ordered = [...movingSet].sort((a, b) => a - b);
+        const movingOrder = ordered.indexOf(index);
+        const direction = movingOrder % 2 === 0 ? 1 : -1;
+
         sprite.movingSpec = {
           mode: MOVING_PLATFORM.mode,
-          velocityX: movingPlatformVelocity(state.layoutSeed, variantIndex),
+          velocityX: baseVelocity * direction,
           width: platform.width * (platform.scaleX || 1),
           wrapBuffer: MOVING_PLATFORM.wrapBuffer,
         };

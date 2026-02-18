@@ -217,30 +217,36 @@ function adjustCandidateAgainst(platform, candidate) {
 function hasConservativePathForMovingPlatform(platforms) {
   if (!MOVING_PLATFORM.enabled) return true;
 
-  const movingIndex = Number.isInteger(MOVING_PLATFORM.movingPlatformIndex)
-    ? MOVING_PLATFORM.movingPlatformIndex
-    : 2;
-  const moving = platforms[movingIndex];
-  if (!moving || movingIndex === 0) return true;
+  const movingIndices = Array.isArray(MOVING_PLATFORM.movingPlatformIndexes)
+    ? MOVING_PLATFORM.movingPlatformIndexes
+    : [MOVING_PLATFORM.movingPlatformIndex];
 
   const conservativeGap = MOVING_PLATFORM.conservativeJumpGap;
-  let hasNearbyPath = false;
 
-  for (let i = 0; i < platforms.length; i += 1) {
-    if (i === movingIndex) continue;
-    const other = platforms[i];
-    const gap = edgeGap(moving, other);
-    const dy = Math.abs(other.y - moving.y);
-    if (gap > conservativeGap) continue;
+  for (const movingIndex of movingIndices) {
+    if (!Number.isInteger(movingIndex) || movingIndex <= 0) continue;
+    const moving = platforms[movingIndex];
+    if (!moving) continue;
 
-    // Require at least one practical connection near the moving platform.
-    if (dy <= MAX_UPWARD_RISE && (canJumpBetween(other, moving) || canJumpBetween(moving, other))) {
-      hasNearbyPath = true;
-      break;
+    let hasNearbyPath = false;
+    for (let i = 0; i < platforms.length; i += 1) {
+      if (i === movingIndex) continue;
+      const other = platforms[i];
+      const gap = edgeGap(moving, other);
+      const dy = Math.abs(other.y - moving.y);
+      if (gap > conservativeGap) continue;
+
+      // Require at least one practical connection near each moving platform.
+      if (dy <= MAX_UPWARD_RISE && (canJumpBetween(other, moving) || canJumpBetween(moving, other))) {
+        hasNearbyPath = true;
+        break;
+      }
     }
+
+    if (!hasNearbyPath) return false;
   }
 
-  return hasNearbyPath;
+  return true;
 }
 
 export function canJumpBetween(source, target) {
