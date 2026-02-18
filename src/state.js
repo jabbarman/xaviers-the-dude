@@ -16,6 +16,8 @@ export const state = {
   stars: null,
   bombs: null,
   platforms: null,
+  movingPlatforms: null,
+  movingPlatformState: null,
   music: null,
   /**
    * Reset transient runtime state to defaults without touching persisted values
@@ -38,6 +40,8 @@ export const state = {
     this.stars = null;
     this.bombs = null;
     this.platforms = null;
+    this.movingPlatforms = null;
+    this.movingPlatformState = null;
     // Stop and clear music handle if still active
     try {
       this.music?.stop?.();

@@ -26,6 +26,18 @@ export const GAME_OVER_TEXT = {
   fill: '#000',
 };
 
+// Moving platform phase-1/2 tuning (platform #2 only).
+export const MOVING_PLATFORM = {
+  enabled: true,
+  mode: 'wrap', // supported: 'wrap', 'bounce'
+  speedMin: 30,
+  speedMax: 52,
+  // Keep a little off-screen travel for cleaner wrap transitions.
+  wrapBuffer: 10,
+  // Fairness safeguard: keep nearby jumps conservative for the moving platform.
+  conservativeJumpGap: 180,
+};
+
 // Mobile UI Constants
 export const MOBILE_BUTTON_SIZE = 80;
 export const MOBILE_BUTTON_MARGIN = 20;

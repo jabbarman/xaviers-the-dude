@@ -15,6 +15,7 @@
     "mock:highscores": "node scripts/mock-highscores.js",
     "lint": "eslint .",
     "validate:platforms": "node scripts/validate-platform-layouts.js",
+    "validate:moving-platform": "node scripts/validate-moving-platform.js",
     "format": "prettier --write ."
   },
   "dependencies": {

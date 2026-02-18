@@ -3,6 +3,7 @@ import {
   HEIGHT,
   PLAYER_JUMP_VELOCITY,
   PLAYER_SPEED_X,
+  MOVING_PLATFORM,
 } from '../config.js';
 
 const PLATFORM_WIDTH = 400;
@@ -213,6 +214,32 @@ function adjustCandidateAgainst(platform, candidate) {
   return source;
 }
 
+function hasConservativePathForMovingPlatform(platforms) {
+  if (!MOVING_PLATFORM.enabled || !platforms[1]) return true;
+
+  const moving = platforms[1];
+  const ground = platforms[0];
+
+  if (!canJumpBetween(ground, moving)) {
+    return false;
+  }
+
+  const conservativeGap = MOVING_PLATFORM.conservativeJumpGap;
+  let hasNearbyElevated = false;
+
+  for (let i = 2; i < platforms.length; i += 1) {
+    const other = platforms[i];
+    const gap = edgeGap(moving, other);
+    const dy = Math.abs(other.y - moving.y);
+    if (gap <= conservativeGap && dy <= MAX_UPWARD_RISE) {
+      hasNearbyElevated = true;
+      break;
+    }
+  }
+
+  return hasNearbyElevated;
+}
+
 export function canJumpBetween(source, target) {
   const s = platformRect(source);
   const t = platformRect(target);
@@ -279,6 +306,13 @@ export function validatePlatformLayout(platforms) {
       reason: `blocked ${sideApproachTrap.side} approach on elevated platform ${sideApproachTrap.i} (above<=${sideApproachTrap.above}, below<=${sideApproachTrap.below})`,
     };
   }
+  if (!hasConservativePathForMovingPlatform(platforms)) {
+    return {
+      ok: false,
+      reason: 'moving platform lacks conservative nearby jump path',
+    };
+  }
+
   const highest = elevated.reduce(
     (min, p) => (p.y < min.y ? p : min),
     elevated[0],
@@ -362,6 +396,7 @@ export function generatePlatformLayout(variantIndex = 0, runSeed = DEFAULT_SEED)
           sideApproachEdgeBuffer: SIDE_APPROACH_EDGE_BUFFER,
           sideScanAbove: SIDE_SCAN_ABOVE,
           sideScanBelow: SIDE_SCAN_BELOW,
+          movingPlatformConservativeJumpGap: MOVING_PLATFORM.conservativeJumpGap,
         },
       };
     }
@@ -426,6 +461,7 @@ export function generatePlatformLayout(variantIndex = 0, runSeed = DEFAULT_SEED)
       sideApproachEdgeBuffer: SIDE_APPROACH_EDGE_BUFFER,
       sideScanAbove: SIDE_SCAN_ABOVE,
       sideScanBelow: SIDE_SCAN_BELOW,
+      movingPlatformConservativeJumpGap: MOVING_PLATFORM.conservativeJumpGap,
     },
   };
 }

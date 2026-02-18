@@ -3,6 +3,7 @@ import {
   HEIGHT,
   PORTAL_EXTRA_LIFE,
   GAME_OVER_TEXT,
+  MOVING_PLATFORM,
 } from '../config.js';
 import { state } from '../state.js';
 import { collectStar, bounce, hitBomb } from '../logic.js';
@@ -12,6 +13,7 @@ import { setupFullscreen } from '../ui/fullscreen.js';
 import { Controls } from '../systems/Controls.js';
 import { Spawner } from '../systems/Spawner.js';
 import { HUDSync } from '../systems/HUDSync.js';
+import { advanceMovingPlatform } from '../systems/movingPlatform.js';
 import { RETRO_PALETTE, addCrtOverlay } from '../theme.js';
 
 export class SceneB extends Phaser.Scene {
@@ -73,7 +75,16 @@ export class SceneB extends Phaser.Scene {
         : bgKey !== 'sky'
           ? 'ground_space'
           : 'ground';
-    state.platforms = this.spawner.spawnPlatforms(groundKey, state.variantIndex);
+    const spawnedPlatforms = this.spawner.spawnPlatforms(
+      groundKey,
+      state.variantIndex,
+    );
+    state.platforms = spawnedPlatforms.platforms;
+    state.movingPlatforms = spawnedPlatforms.movingPlatforms;
+    state.movingPlatformState = {
+      layoutSeed: spawnedPlatforms.layout.seed,
+      mode: MOVING_PLATFORM.mode,
+    };
 
     // Player
     state.player = this.spawner.spawnPlayer();
@@ -117,10 +128,21 @@ export class SceneB extends Phaser.Scene {
 
   setupPhysics() {
     this.physics.add.collider(state.player, state.platforms);
+    this.physics.add.collider(state.player, state.movingPlatforms);
+
     this.physics.add.collider(state.stars, state.platforms);
+    this.physics.add.collider(state.stars, state.movingPlatforms);
+
     this.physics.add.collider(
       state.bombs,
       state.platforms,
+      bounce.bind(this),
+      null,
+      this,
+    );
+    this.physics.add.collider(
+      state.bombs,
+      state.movingPlatforms,
       bounce.bind(this),
       null,
       this,
@@ -148,6 +170,7 @@ export class SceneB extends Phaser.Scene {
       if (state.stars?.children) state.stars.clear(true, true);
       if (state.bombs?.children) state.bombs.clear(true, true);
       if (state.platforms?.children) state.platforms.clear(true, true);
+      if (state.movingPlatforms?.children) state.movingPlatforms.clear(true, true);
       this.tweens?.killAll?.();
       this.time?.removeAllEvents?.();
       this.input?.removeAllListeners?.();
@@ -157,7 +180,7 @@ export class SceneB extends Phaser.Scene {
     }
   }
 
-  update(_time, _delta) {
+  update(_time, delta) {
     if (state.gameOver) {
       this.handleGameOver();
       return;
@@ -168,7 +191,15 @@ export class SceneB extends Phaser.Scene {
       return;
     }
 
+    this.updateMovingPlatforms(delta);
     this.controls.update(state.player, state.gameOver);
+  }
+
+  updateMovingPlatforms(deltaMs) {
+    if (!state.movingPlatforms?.children) return;
+    state.movingPlatforms.children.iterate((platform) =>
+      advanceMovingPlatform(platform, deltaMs),
+    );
   }
 
   handleGameOver() {

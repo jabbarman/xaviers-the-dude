@@ -3,9 +3,11 @@ import {
   PLAYER_BOUNCE,
   STARS_BOUNCE_MIN,
   STARS_BOUNCE_MAX,
+  MOVING_PLATFORM,
 } from '../config.js';
 import { state } from '../state.js';
 import { generatePlatformLayout } from './platformLayout.js';
+import { movingPlatformVelocity } from './movingPlatform.js';
 
 export class Spawner {
   constructor(scene) {
@@ -14,16 +16,39 @@ export class Spawner {
 
   spawnPlatforms(groundKey, variantIndex) {
     const platforms = this.scene.physics.add.staticGroup();
+    const movingPlatforms = this.scene.physics.add.group({
+      allowGravity: false,
+      immovable: true,
+    });
     const layout = generatePlatformLayout(variantIndex, state.layoutSeed);
 
-    layout.platforms.forEach((platform) => {
+    layout.platforms.forEach((platform, index) => {
+      // Platform #2 (index 1) is moving in phase 1/2.
+      if (MOVING_PLATFORM.enabled && index === 1) {
+        const sprite = movingPlatforms.create(platform.x, platform.y, groundKey);
+        if (platform.scaleX && platform.scaleX !== 1) {
+          sprite.setScale(platform.scaleX, 1);
+        }
+        sprite.refreshBody();
+        sprite.body.allowGravity = false;
+        sprite.body.immovable = true;
+        sprite.body.moves = false;
+        sprite.movingSpec = {
+          mode: MOVING_PLATFORM.mode,
+          velocityX: movingPlatformVelocity(state.layoutSeed, variantIndex),
+          width: platform.width * (platform.scaleX || 1),
+          wrapBuffer: MOVING_PLATFORM.wrapBuffer,
+        };
+        return;
+      }
+
       const sprite = platforms.create(platform.x, platform.y, groundKey);
       if (platform.scaleX && platform.scaleX !== 1) {
         sprite.setScale(platform.scaleX, 1).refreshBody();
       }
     });
 
-    return platforms;
+    return { platforms, movingPlatforms, layout };
   }
 
   spawnPlayer() {
@@ -31,9 +56,6 @@ export class Spawner {
     player.setBounce(PLAYER_BOUNCE);
     player.setCollideWorldBounds(true);
 
-    // Animations (re-create each time as they are global to the game instance usually, but scoped to scene usage here if needed)
-    // Actually Phaser anims are global, so we only need to create them once, but safer to check if they exist or just recreate if that's the pattern.
-    // Existing code in SceneB creates them every time.
     if (!this.scene.anims.exists('left')) {
       this.scene.anims.create({
         key: 'left',
