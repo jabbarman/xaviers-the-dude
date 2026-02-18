@@ -331,6 +331,18 @@ try {
 
     $db->exec("CREATE INDEX IF NOT EXISTS idx_highscores_score ON highscores (score DESC, createdAt ASC)");
 
+    // Lightweight schema migration for older deployments.
+    $highscoreColumns = $db->query("PRAGMA table_info(highscores)")->fetchAll(PDO::FETCH_ASSOC);
+    $highscoreColumnNames = array_map(function ($col) {
+        return isset($col['name']) ? (string) $col['name'] : '';
+    }, $highscoreColumns);
+    if (!in_array('metadata', $highscoreColumnNames, true)) {
+        $db->exec("ALTER TABLE highscores ADD COLUMN metadata TEXT");
+    }
+    if (!in_array('createdAt', $highscoreColumnNames, true)) {
+        $db->exec("ALTER TABLE highscores ADD COLUMN createdAt DATETIME DEFAULT CURRENT_TIMESTAMP");
+    }
+
     $db->exec("CREATE TABLE IF NOT EXISTS highscore_sessions (
         id TEXT PRIMARY KEY,
         token TEXT NOT NULL,
