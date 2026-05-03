@@ -99,10 +99,18 @@ export class Spawner {
   }
 
   spawnStars(starsPerWave) {
-    const stepX = Math.floor(WIDTH / (starsPerWave + 1));
-    const stars = this.scene.physics.add.group({
+    const starCount = Math.max(0, starsPerWave || 0);
+    const stars = this.scene.physics.add.group();
+
+    if (starCount === 0) {
+      return stars;
+    }
+
+    const repeat = Math.max(0, starCount - 1);
+    const stepX = Math.floor(WIDTH / (starCount + 1));
+    stars.createMultiple({
       key: 'star',
-      repeat: starsPerWave,
+      repeat,
       setXY: { x: 12, y: 0, stepX },
     });
 

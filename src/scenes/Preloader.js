@@ -72,6 +72,8 @@ export class Preloader extends Phaser.Scene {
     this.load.image('ground_alien', 'assets/platform_alien.png');
     this.load.image('star', 'assets/star.png');
     this.load.image('bomb', 'assets/bomb.png');
+    this.load.image('boss', 'assets/boss.png');
+    this.load.image('boss_incoming', 'assets/boss_incoming.png');
     this.load.image('block', 'assets/input/block.png');
     this.load.image('rub', 'assets/input/rub.png');
     this.load.image('end', 'assets/input/end.png');
@@ -114,6 +116,7 @@ export class Preloader extends Phaser.Scene {
     this.load.audio('gameOver', 'assets/audio/SoundEffects/player_death.wav');
     this.load.audio('ping', 'assets/audio/SoundEffects/p-ping.mp3');
     this.load.audio('explode', 'assets/audio/SoundEffects/explosion.mp3');
+    this.load.audio('bossHit', 'assets/audio/SoundEffects/boss_hit.wav');
     this.load.audio(
       'bounce',
       'assets/audio/SoundEffects/mario-jumping-sound.mp3',

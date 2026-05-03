@@ -12,6 +12,7 @@ import {
   BOMB_INITIAL_VY,
   PORTAL_WAVE_INTERVAL,
   EXTRA_BOMB_WAVE_BEFORE_PORTAL,
+  PLAYER_INVULNERABILITY_MS,
 } from './config.js';
 import { setString } from './persistence.js';
 
@@ -61,6 +62,11 @@ export function collectStar(player, star) {
   }
 
   if (state.stars?.countActive?.(true) === 0) {
+    if (typeof this?.handleWaveCleared === 'function') {
+      this.handleWaveCleared(player);
+      return;
+    }
+
     // A new batch of stars to collect
     try {
       state.stars.children.iterate(function (child) {
@@ -126,24 +132,64 @@ export function bounce() {
   } catch (e) { console.warn('Error playing bounce sound:', e); }
 }
 
-export async function hitBomb(player, bomb) {
-  if (!state) return;
+function setPlayerInvulnerabilityFx(scene, player) {
+  if (!scene || !player) return;
+  try {
+    player.clearTint?.();
+    player.setAlpha?.(1);
+    scene._playerInvulnerabilityTween?.stop?.();
+    scene._playerInvulnerabilityTween = scene.tweens.add({
+      targets: player,
+      alpha: 0.35,
+      duration: 120,
+      yoyo: true,
+      repeat: Math.max(1, Math.floor(PLAYER_INVULNERABILITY_MS / 240) - 1),
+      onComplete: () => {
+        player.setAlpha?.(1);
+        player.clearTint?.();
+        scene._playerInvulnerabilityTween = null;
+      },
+    });
+    player.setTint?.(0xffb3b3);
+    scene.time.delayedCall(PLAYER_INVULNERABILITY_MS, () => {
+      player.setAlpha?.(1);
+      player.clearTint?.();
+      if (scene._playerInvulnerabilityTween?.isPlaying?.()) {
+        scene._playerInvulnerabilityTween.stop();
+      }
+      scene._playerInvulnerabilityTween = null;
+    });
+  } catch (e) {
+    console.warn('Error applying player invulnerability FX:', e);
+  }
+}
+
+export function damagePlayer(player, source) {
+  if (!this || !state || state.gameOver) return false;
+
+  const now = this.time?.now ?? Date.now();
+  if (isPlayerInvulnerable(this)) {
+    return false;
+  }
+
+  state.invulnerableUntil = now + PLAYER_INVULNERABILITY_MS;
   state.lives -= 1;
   try {
     this.game.events.emit('hud:lives', state.lives);
   } catch (e) { console.warn('Error emitting hud:lives event:', e); }
   try {
-    this.physics.pause();
-  } catch (e) { console.warn('Error pausing physics:', e); }
-  try {
     this.sound.play('explode');
   } catch (e) { console.warn('Error playing explode sound:', e); }
-  if (state.lives > 0) {
-    await sleep(2000);
-    try {
-      this.physics.resume();
-    } catch (e) { console.warn('Error resuming physics:', e); }
-  } else {
+
+  try {
+    const sourceX = source?.x ?? player?.x ?? 0;
+    const direction = (player?.x ?? 0) >= sourceX ? 1 : -1;
+    player?.setVelocity?.(170 * direction, -220);
+  } catch (e) {
+    console.warn('Error applying player knockback:', e);
+  }
+
+  if (state.lives <= 0) {
     try {
       this.sound.play('gameOver');
     } catch (e) { console.warn('Error playing gameOver sound:', e); }
@@ -154,13 +200,23 @@ export async function hitBomb(player, bomb) {
       player?.setTint?.(0xff0000);
     } catch (e) { console.warn('Error setting player tint:', e); }
     state.gameOver = true;
+    return true;
   }
 
+  setPlayerInvulnerabilityFx(this, player);
+  return true;
+}
+
+export function isPlayerInvulnerable(scene) {
+  if (!scene || !state) return false;
+  const now = scene.time?.now ?? Date.now();
+  return state.invulnerableUntil > now;
+}
+
+export function hitBomb(player, bomb) {
+  const damaged = damagePlayer.call(this, player, bomb);
   try {
     bomb?.disableBody?.(true, true);
   } catch (e) { console.warn('Error disabling bomb body:', e); }
-}
-
-export async function sleep(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
+  return damaged;
 }
