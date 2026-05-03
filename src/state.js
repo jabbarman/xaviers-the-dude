@@ -3,13 +3,14 @@
 
 export const state = {
   debug: false,
-  starsPerWave: 10, // actual number will be repeat + 1 due to Phaser group behavior
+  starsPerWave: 10,
   lives: 3,
   score: 0,
   hiScore: 100,
   wave: 1,
   portalJump: false,
   gameOver: false,
+  invulnerableUntil: 0,
   variantIndex: 0, // increments after each portal jump to alter SceneB variation
   layoutSeed: (Date.now() >>> 0), // per-run seed for platform layout variety across reloads/runs
   player: null,
@@ -33,6 +34,7 @@ export const state = {
     this.wave = 1;
     this.portalJump = false;
     this.gameOver = false;
+    this.invulnerableUntil = 0;
     this.variantIndex = 0;
     this.layoutSeed = (Date.now() >>> 0);
     // Clear runtime references to allow GC between runs

@@ -6,6 +6,7 @@ export const HEIGHT = 600;
 export const PLAYER_SPEED_X = 160;
 export const PLAYER_JUMP_VELOCITY = -330;
 export const PLAYER_BOUNCE = 0.2;
+export const PLAYER_INVULNERABILITY_MS = 3000;
 
 export const STAR_SCORE_BASE = 10; // multiplied by wave
 export const STARS_BOUNCE_MIN = 0.4;
@@ -18,6 +19,19 @@ export const BOMB_INITIAL_VY = 20;
 export const EXTRA_BOMB_WAVE_BEFORE_PORTAL = 1; // waves before portal to spawn extra bomb
 export const PORTAL_WAVE_INTERVAL = 5;
 export const PORTAL_EXTRA_LIFE = 1;
+export const FINAL_LEVEL_BACKGROUND_KEY = 'alien_landscape';
+export const FINAL_LEVEL_WARNING_WAVE = 1;
+export const FINAL_LEVEL_BOSS_WAVE = 2;
+export const FINAL_LEVEL_REWARD_WAVE = 5;
+export const FINAL_LEVEL_BOSS_HP = 3;
+export const FINAL_LEVEL_REWARD_STARS = 30;
+export const FINAL_LEVEL_BOMB_CAP = 3;
+export const BOSS_WARNING_SCALE = 0.52;
+export const BOSS_SCALE = 1.3;
+export const BOSS_JUMP_INTERVAL_MS = 1400;
+export const BOSS_JUMP_VELOCITY_Y = -285;
+export const BOSS_SPEED_X = 150;
+export const BOSS_PLATFORM_LANDING_TOLERANCE = 10;
 
 export const GAME_OVER_TEXT = {
   x: 400,
